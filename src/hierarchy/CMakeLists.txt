@@ -4,8 +4,12 @@ add_library(
     Bestiary.hpp
     BestiaryFactory.cpp
     BestiaryFactory.hpp
+    DescriptionOutput.cpp
+    DescriptionOutput.hpp
     EventDispatcher.cpp
     EventDispatcher.hpp
+    FreeOutput.cpp
+    FreeOutput.hpp
     IBestiary.hpp
     IEventDispatcher.hpp
 )
@@ -16,8 +20,8 @@ add_executable(
 
 target_link_libraries(
     battle
-    PUBLIC
+    PRIVATE
         bestiary
-  )
+)
 
 add_subdirectory(tests)

@@ -2,11 +2,12 @@
 
 #include "IEventDispatcher.hpp"
 #include "IBestiary.hpp"
+#include "IApplier.hpp"
 
 #include <cstddef>
 
 
-class Rat : public Attacker, public Defender
+class Rat : public Attacker, public Defender, public Applier
 {
 private:
     std::size_t m_hp;
@@ -22,6 +23,7 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
@@ -35,7 +37,9 @@ public:
         : Rat(hp, strength, ed), m_armor(armor)
     {}
 
+    std::size_t get_armor() const { return m_armor; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
@@ -51,12 +55,14 @@ public:
     {}
 
     std::size_t attack() const override { return Rat::attack() + m_rot_stack; }
-    std::size_t get_rot_stack() { return m_rot_stack; }
+    std::size_t get_rot() const { return m_rot; }
+    std::size_t get_rot_stack() const { return m_rot_stack; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
-class Hulk : public Attacker, public Defender
+class Hulk : public Attacker, public Defender, public Applier
 {
 private:
     std::size_t m_hp;
@@ -72,10 +78,11 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
-class Mimic : public Attacker, public Defender
+class Mimic : public Attacker, public Defender, public Applier
 {
 private:
     std::size_t m_hp;
@@ -91,10 +98,11 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
-class Slime : public Attacker, public Defender
+class Slime : public Attacker, public Defender, public Applier
 {
 private:
     std::size_t m_hp;
@@ -110,10 +118,11 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
-class SlimeShard : public Attacker, public Defender
+class SlimeShard : public Attacker, public Defender, public Applier
 {
 private:
     std::size_t m_hp;
@@ -128,10 +137,11 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
-class SlimeQueen: public Attacker, public Defender
+class SlimeQueen: public Attacker, public Defender, public Applier
 {
 private:
     std::size_t m_hp;
@@ -147,10 +157,11 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
-class PoisonCloud : public Attacker
+class PoisonCloud : public Attacker, public Applier
 {
 private:
     std::size_t m_strength;
@@ -159,10 +170,11 @@ public:
     PoisonCloud(std::size_t strength) : m_strength(strength) {}
 
     std::size_t attack() const override { return m_strength; }
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 
-class Door : public Defender
+class Door : public Defender, public Applier
 {
 private:
     std::size_t m_hp;
@@ -176,10 +188,12 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };
 
 class StonePortal : public Door
 {
 public:
     void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
 };

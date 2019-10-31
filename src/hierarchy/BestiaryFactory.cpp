@@ -1,6 +1,10 @@
+#include "DescriptionOutput.hpp"
+#include "FreeOutput.hpp"
+
 #include "BestiaryFactory.hpp"
 #include "Bestiary.hpp"
 
+#include <iostream>
 #include <algorithm>
 #include <random>
 #include <stdexcept>
@@ -9,6 +13,23 @@
 
 static std::random_device rd;
 static std::mt19937 gen{rd()};
+
+namespace
+{
+template <typename T>
+void print_monster(const T& npc, const std::string& name)
+{
+    DescriptionOutput description_printer;
+    FreeOutput stats_printer;
+
+    std::cout << "Name: " << name << '\n';
+
+    stats_printer.visit(npc);
+    description_printer.visit(npc);
+
+    std::cout << '\n';
+}
+}
 
 BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
 {
@@ -23,7 +44,7 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
     };
 
     ed.is_dead_subscribe(
-        [this, cmp] (Attacker* a_npc, Defender* d_npc)
+        [this, cmp] (Attacker* a_npc, Defender* d_npc, const Applier&)
         {
             assert(d_npc);
             auto binary_find_and_erase = [cmp](auto& vec, auto* key)
@@ -60,6 +81,8 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
                 auto name = "Rat "s + std::to_string(rat_num++);
                 m_attackers.emplace_back(r, name);
                 m_defenders.emplace_back(r, name);
+                print_monster(*r, name);
+                break;
             }
             case 1:
             {
@@ -70,6 +93,8 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
                 auto name = "Hulk "s + std::to_string(hulk_num++);
                 m_attackers.emplace_back(r, name);
                 m_defenders.emplace_back(r, name);
+                print_monster(*r, name);
+                break;
             }
             case 2:
             {
@@ -79,6 +104,8 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
                 auto name = "Mimic "s + std::to_string(mimic_num++);
                 m_attackers.emplace_back(r, name);
                 m_defenders.emplace_back(r, name);
+                print_monster(*r, name);
+                break;
             }
             case 3:
             {
@@ -89,6 +116,8 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
                 auto name = "Slime "s + std::to_string(slime_num++);
                 m_attackers.emplace_back(r, name);
                 m_defenders.emplace_back(r, name);
+                print_monster(*r, name);
+                break;
             }
             case 4:
             {
@@ -97,6 +126,8 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
                 PoisonCloud* r = new PoisonCloud(poison_cloud_strg_dis(gen));
                 auto name = "PoisonCloud "s + std::to_string(poison_cloud_num++);
                 m_attackers.emplace_back(r, name);
+                print_monster(*r, name);
+                break;
             }
             case 5:
             {
@@ -105,6 +136,8 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
                 Door* r = new Door(door_hp_dis(gen), ed);
                 auto name = "Door "s + std::to_string(door_num++);
                 m_defenders.emplace_back(r, name);
+                print_monster(*r, name);
+                break;
             }
             case 6:
             {
@@ -116,6 +149,8 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
                 auto name = "ArmoredRat "s + std::to_string(arm_rat_num++);
                 m_attackers.emplace_back(r, name);
                 m_defenders.emplace_back(r, name);
+                print_monster(*r, name);
+                break;
             }
             case 7:
             {
@@ -127,6 +162,8 @@ BestiaryFactory::BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed)
                 auto name = "PlagueRat "s + std::to_string(prat_num++);
                 m_attackers.emplace_back(r, name);
                 m_defenders.emplace_back(r, name);
+                print_monster(*r, name);
+                break;
             }
         }
     }

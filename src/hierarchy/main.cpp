@@ -11,11 +11,26 @@ int main()
 
     for (std::size_t i = 0; i < 50; ++i)
     {
-        auto a = monster_gen.get_rnd_attacker();
-        auto d = monster_gen.get_rnd_defender();
+        if (monster_gen.is_last_man_standing())
+        {
+            auto a = monster_gen.get_rnd_attacker();
+            std::cout
+                << "====================================================\n"
+                << "And the winner is " << a.first << "!!!\n"
+                << "====================================================\n";
+            std::cout.flush();
+            break;
+        }
 
-        while (a.first == d.first)
+        // TODO: Refactor dirty way of getting defenders.
+        decltype(monster_gen.get_rnd_attacker()) a;
+        decltype(monster_gen.get_rnd_defender()) d;
+        do
+        {
+            a = monster_gen.get_rnd_attacker();
             d = monster_gen.get_rnd_defender();
+        }
+        while (a.first == d.first);
 
         auto dmg = a.second->attack();
 

@@ -24,4 +24,13 @@ public:
     BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed);
     std::pair<std::string, const Attacker*> get_rnd_attacker() const;
     std::pair<std::string, Defender*> get_rnd_defender() const;
+    bool is_last_man_standing() const
+    {
+        return m_defenders.empty()
+            || m_attackers.empty()
+            || (m_attackers.size() == 1
+                && m_defenders.size() == 1
+                && m_defenders.front().name == m_attackers.front().name
+            );
+    }
 };
