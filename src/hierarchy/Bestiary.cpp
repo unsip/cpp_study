@@ -125,19 +125,15 @@ void SlimeShard::apply(const IBestiaryVisitor& v) const
 
 void SlimeQueen::hit(std::size_t dmg)
 {
-//    m_hp -= std::min(m_hp, dmg);
-//
-//    if (is_dead())
-//        m_ed.is_dead_emit(this, this);
-//    else
-//    {
-//        // TODO
-//        // Roll 1d6
-//        // if 6 then m_ed.emit_queen_spawn
-//        // else
-//        //   1d2 % 2 ? m_ed.emit_slime_shard_spawn : pass
-//        //
-//    }
+    m_ed.is_hit_emit(this, this, *this);
+
+    m_hp -= std::min(m_hp, dmg);
+
+    if (dmg)
+        m_ed.is_dmg_emit(this, this, *this);
+
+    if (is_dead())
+        m_ed.is_dead_emit(this, this, *this);
 }
 
 void SlimeQueen::apply(const IBestiaryVisitor& v) const
@@ -176,4 +172,23 @@ void StonePortal::apply(const IBestiaryVisitor& v) const
 void PoisonCloud::apply(const IBestiaryVisitor& v) const
 {
     v.visit(*this);
+}
+
+
+void ZombieMimic::apply(const IBestiaryVisitor& v) const
+{
+    v.visit(*this);
+}
+
+void ZombieMimic::hit(std::size_t dmg)
+{
+    m_ed.is_hit_emit(this, this, *this);
+
+    m_hp -= std::min(m_hp, dmg);
+
+    if (dmg)
+        m_ed.is_dmg_emit(this, this, *this);
+
+    if (is_dead())
+        m_ed.is_dead_emit(this, this, *this);
 }

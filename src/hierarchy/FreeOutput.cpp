@@ -53,6 +53,11 @@ void FreeOutput::visit(const Mimic& mimic) const
     std::cout << std::endl;
 }
 
+void FreeOutput::visit(const ZombieMimic& zmimic) const
+{
+
+}
+
 void FreeOutput::visit(const Slime& slime) const
 {
     std::cout << "Class: Slime";

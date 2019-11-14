@@ -102,6 +102,27 @@ public:
 };
 
 
+class ZombieMimic : public Attacker, public Defender, public Applier
+{
+private:
+    std::size_t m_hp;
+    std::size_t m_strength;
+    std::size_t m_res_cnt = 0;
+    const IEventDispatcher& m_ed;
+
+public:
+    explicit ZombieMimic(std::size_t hp, std::size_t strength, const IEventDispatcher& ed)
+        : m_hp(hp), m_strength(strength), m_ed(ed)
+    {}
+
+    std::size_t attack() const override { return m_strength; }
+    bool is_dead() const override { return m_hp == 0; }
+    std::size_t get_hp() const override { return m_hp; }
+    void hit(std::size_t dmg) override;
+    void apply(const IBestiaryVisitor&) const override;
+}
+
+
 class Slime : public Attacker, public Defender, public Applier
 {
 private:

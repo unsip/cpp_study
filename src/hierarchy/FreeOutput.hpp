@@ -11,6 +11,7 @@ public:
 
     void visit(const Hulk&) const override;
     void visit(const Mimic&) const override;
+    void visit(const ZombieMimic&) const override;
 
     void visit(const Slime&) const override;
     void visit(const SlimeShard&) const override;

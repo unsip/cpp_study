@@ -11,6 +11,7 @@ public:
 
     virtual void visit(const Hulk&) const = 0;
     virtual void visit(const Mimic&) const = 0;
+    virtual void visit(const ZombieMimic&) const = 0;
 
     virtual void visit(const Slime&) const = 0;
     virtual void visit(const SlimeShard&) const = 0;
