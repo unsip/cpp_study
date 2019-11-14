@@ -1,9 +1,9 @@
 add_library(
     bestiary
     Bestiary.cpp
-    Bestiary.hpp
     BestiaryFactory.cpp
     BestiaryFactory.hpp
+    Bestiary.hpp
     DescriptionOutput.cpp
     DescriptionOutput.hpp
     EventDispatcher.cpp
@@ -12,6 +12,7 @@ add_library(
     FreeOutput.hpp
     IBestiary.hpp
     IEventDispatcher.hpp
+    Scene.cpp
 )
 add_executable(
     battle

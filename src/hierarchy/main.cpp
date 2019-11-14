@@ -1,4 +1,5 @@
 #include "BestiaryFactory.hpp"
+#include "Scene.hpp"
 #include "EventDispatcher.hpp"
 
 #include <iostream>
@@ -7,13 +8,14 @@
 int main()
 {
     EventDispatcher ed;
-    BestiaryFactory monster_gen{10, ed};
+    BestiaryFactory monster_gen{ed};
+    Scene scene{10, monster_gen, ed};
 
     for (std::size_t i = 0; i < 50; ++i)
     {
-        if (monster_gen.is_last_man_standing())
+        if (scene.is_last_man_standing())
         {
-            auto a = monster_gen.get_rnd_attacker();
+            auto a = scene.get_rnd_attacker();
             std::cout
                 << "  ==================================\n"
                 << "  And the winner is " << a.first << "!!!\n"
@@ -23,12 +25,12 @@ int main()
         }
 
         // TODO: Refactor dirty way of getting defenders.
-        decltype(monster_gen.get_rnd_attacker()) a;
-        decltype(monster_gen.get_rnd_defender()) d;
+        decltype(scene.get_rnd_attacker()) a;
+        decltype(scene.get_rnd_defender()) d;
         do
         {
-            a = monster_gen.get_rnd_attacker();
-            d = monster_gen.get_rnd_defender();
+            a = scene.get_rnd_attacker();
+            d = scene.get_rnd_defender();
         }
         while (a.first == d.first);
 

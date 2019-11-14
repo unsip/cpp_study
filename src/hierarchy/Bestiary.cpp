@@ -125,12 +125,18 @@ void SlimeShard::apply(const IBestiaryVisitor& v) const
 
 void SlimeQueen::hit(std::size_t dmg)
 {
+    if (is_dead())
+        return;
+
     m_ed.is_hit_emit(this, this, *this);
+    if (0 == dmg)
+        return;
+
+    if (dmg >= m_hp)
+        spawn_shards();
 
     m_hp -= std::min(m_hp, dmg);
-
-    if (dmg)
-        m_ed.is_dmg_emit(this, this, *this);
+    m_ed.is_dmg_emit(this, this, *this);
 
     if (is_dead())
         m_ed.is_dead_emit(this, this, *this);
@@ -139,6 +145,19 @@ void SlimeQueen::hit(std::size_t dmg)
 void SlimeQueen::apply(const IBestiaryVisitor& v) const
 {
     v.visit(*this);
+}
+
+void SlimeQueen::spawn_shards()
+{
+    std::size_t total = get_hp() / 2;
+    m_brood.reserve(total);
+    for (std::size_t i = 0; i < total; ++i)
+        m_brood.emplace_back(new SlimeShard(2, m_ed));
+}
+
+std::vector<SlimeShard*> SlimeQueen::detach_shards()
+{
+    return std::move(m_brood);
 }
 
 void Door::hit(std::size_t dmg)
@@ -182,13 +201,32 @@ void ZombieMimic::apply(const IBestiaryVisitor& v) const
 
 void ZombieMimic::hit(std::size_t dmg)
 {
+    if (is_dead())
+        return;
+
     m_ed.is_hit_emit(this, this, *this);
+    if (0 == dmg)
+        return;
 
     m_hp -= std::min(m_hp, dmg);
-
-    if (dmg)
-        m_ed.is_dmg_emit(this, this, *this);
+    m_ed.is_dmg_emit(this, this, *this);
 
     if (is_dead())
         m_ed.is_dead_emit(this, this, *this);
+}
+
+bool ZombieMimic::reborn()
+{
+    if (!is_dead())
+        throw std::runtime_error("Can't reborn alive ZombieMimic!");
+
+    if (m_reborn_cnt)
+    {
+        --m_reborn_cnt;
+        m_hp = m_reborn_hp;
+        m_reborn_hp /= 2;
+        return true;
+    }
+
+    return false;
 }

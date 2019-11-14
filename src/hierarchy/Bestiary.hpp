@@ -106,13 +106,15 @@ class ZombieMimic : public Attacker, public Defender, public Applier
 {
 private:
     std::size_t m_hp;
+    std::size_t m_reborn_hp;
+    std::size_t m_reborn_cnt = 2;
     std::size_t m_strength;
     std::size_t m_res_cnt = 0;
     const IEventDispatcher& m_ed;
 
 public:
     explicit ZombieMimic(std::size_t hp, std::size_t strength, const IEventDispatcher& ed)
-        : m_hp(hp), m_strength(strength), m_ed(ed)
+        : m_hp(hp), m_reborn_hp(hp / 2), m_strength(strength), m_ed(ed)
     {}
 
     std::size_t attack() const override { return m_strength; }
@@ -120,7 +122,8 @@ public:
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
     void apply(const IBestiaryVisitor&) const override;
-}
+    bool reborn();
+};
 
 
 class Slime : public Attacker, public Defender, public Applier
@@ -167,6 +170,7 @@ class SlimeQueen: public Attacker, public Defender, public Applier
 private:
     std::size_t m_hp;
     std::size_t m_strength;
+    std::vector<SlimeShard*> m_brood;
     const IEventDispatcher& m_ed;
 
 public:
@@ -179,6 +183,8 @@ public:
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
     void apply(const IBestiaryVisitor&) const override;
+    void spawn_shards();
+    std::vector<SlimeShard*> detach_shards();
 };
 
 

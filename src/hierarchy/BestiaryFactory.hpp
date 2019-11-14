@@ -3,34 +3,17 @@
 #include "IBestiary.hpp"
 #include "IEventDispatcher.hpp"
 
+#include <tuple>
 #include <string>
-#include <vector>
-#include <utility>
 
 class BestiaryFactory
 {
-private:
-    template <typename T>
-    struct data
-    {
-        data(const T& p, std::string s) : ptr(p), name(std::move(s))
-        {}
-        T ptr;
-        std::string name;
-    };
-    std::vector<data<Attacker*>> m_attackers;
-    std::vector<data<Defender*>> m_defenders;
 public:
-    BestiaryFactory(std::size_t npc_num, IEventDispatcher& ed);
-    std::pair<std::string, const Attacker*> get_rnd_attacker() const;
-    std::pair<std::string, Defender*> get_rnd_defender() const;
-    bool is_last_man_standing() const
-    {
-        return m_defenders.empty()
-            || m_attackers.empty()
-            || (m_attackers.size() == 1
-                && m_defenders.size() == 1
-                && m_defenders.front().name == m_attackers.front().name
-            );
-    }
+    explicit BestiaryFactory(IEventDispatcher& ed) noexcept : m_ed(ed)
+    {}
+
+    std::tuple<std::string, Attacker*, Defender*> get_npc() const;
+
+private:
+    IEventDispatcher& m_ed;
 };
