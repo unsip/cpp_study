@@ -18,7 +18,7 @@ void Rat::hit(std::size_t dmg)
         m_ed.is_dead_emit(this, this, *this);
 }
 
-void Rat::apply(const IBestiaryVisitor& v) const
+void Rat::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -29,7 +29,7 @@ void ArmoredRat::hit(std::size_t dmg)
     Rat::hit(admg);
 }
 
-void ArmoredRat::apply(const IBestiaryVisitor& v) const
+void ArmoredRat::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -41,7 +41,7 @@ void PlagueRat::hit(std::size_t dmg)
     Rat::hit(dmg + m_rot);
 }
 
-void PlagueRat::apply(const IBestiaryVisitor& v) const
+void PlagueRat::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -63,7 +63,7 @@ void Hulk::hit(std::size_t dmg)
         m_ed.is_dead_emit(this, this, *this);
 }
 
-void Hulk::apply(const IBestiaryVisitor& v) const
+void Hulk::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -82,7 +82,7 @@ void Mimic::hit(std::size_t dmg)
         m_ed.is_dead_emit(this, this, *this);
 }
 
-void Mimic::apply(const IBestiaryVisitor& v) const
+void Mimic::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -100,7 +100,7 @@ void Slime::hit(std::size_t dmg)
         m_ed.is_dead_emit(this, this, *this);
 }
 
-void Slime::apply(const IBestiaryVisitor& v) const
+void Slime::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -118,7 +118,7 @@ void SlimeShard::hit(std::size_t dmg)
         m_ed.is_dead_emit(this, this, *this);
 }
 
-void SlimeShard::apply(const IBestiaryVisitor& v) const
+void SlimeShard::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -142,7 +142,7 @@ void SlimeQueen::hit(std::size_t dmg)
         m_ed.is_dead_emit(this, this, *this);
 }
 
-void SlimeQueen::apply(const IBestiaryVisitor& v) const
+void SlimeQueen::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -173,7 +173,7 @@ void Door::hit(std::size_t dmg)
         m_ed.is_dead_emit(nullptr, this, *this);
 }
 
-void Door::apply(const IBestiaryVisitor& v) const
+void Door::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
@@ -183,18 +183,17 @@ void StonePortal::hit(std::size_t dmg)
     Door::hit(dmg / 2);
 }
 
-void StonePortal::apply(const IBestiaryVisitor& v) const
+void StonePortal::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
 
-void PoisonCloud::apply(const IBestiaryVisitor& v) const
+void PoisonCloud::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }
 
-
-void ZombieMimic::apply(const IBestiaryVisitor& v) const
+void ZombieMimic::apply(const IBestiaryVisitor& v)
 {
     v.visit(*this);
 }

@@ -1,11 +1,15 @@
 add_library(
     bestiary
-    Bestiary.cpp
+    BaseVisitor.cpp
+    BaseVisitor.hpp
     BestiaryFactory.cpp
     BestiaryFactory.hpp
+    Bestiary.cpp
     Bestiary.hpp
     DescriptionOutput.cpp
     DescriptionOutput.hpp
+    DeathVisitor.cpp
+    DeathVisitor.hpp
     EventDispatcher.cpp
     EventDispatcher.hpp
     FreeOutput.cpp

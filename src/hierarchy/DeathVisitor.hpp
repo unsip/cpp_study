@@ -4,12 +4,14 @@
 
 class DeathVisitor : public BaseVisitor
 {
-public:
-    explicit DeathVisitor();
-    void visit(const ZombieMimic&) const override;
-    void visit(const SlimeQueen&) const override;
-
 private:
-    std::function<void(Defender*, Attacker*)> m_add2scene;
+    IEventDispatcher& m_ed;
+public:
+    explicit DeathVisitor(IEventDispatcher& ed) noexcept
+        : m_ed(ed)
+    {}
+    void visit(Attacker*, Defender*, Applier&) const override;
+    void visit(ZombieMimic&) const override;
+    void visit(SlimeQueen&) const override;
 };
 

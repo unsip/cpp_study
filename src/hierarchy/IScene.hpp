@@ -7,7 +7,7 @@
 class IScene
 {
 public:
-    virtual void add(std::string name, Attacker*, Defender*) = 0;
+    virtual void add(const std::string& name, Attacker*, Defender*) = 0;
     virtual void remove(Attacker*, Defender*) = 0;
 };
 

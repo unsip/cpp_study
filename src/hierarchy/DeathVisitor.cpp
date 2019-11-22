@@ -1,21 +1,22 @@
 #include "DeathVisitor.hpp"
+#include "IEventDispatcher.hpp"
 
-
-// TODO: Refactor with dependency injection of Scene.
-DeathVisitor::DeathVisitor(std::function<void()> add2scene)
-  : m_add2scene(std::move(add2scene))
+void DeathVisitor::visit(Attacker* a, Defender* d, Applier& app) const
 {
+    m_ed.on_terminate_emit(a, d, app);
 }
 
-void DeathVisitor::visit(const ZombieMimic& v) const
+void DeathVisitor::visit(ZombieMimic& v) const
 {
     if (!v.reborn())
-        m_erase_from_scene(v);
+        m_ed.on_terminate_emit(&v, &v, v);
 }
 
-void DeathVisitor::visit(const SlimeQueen& v) const
+void DeathVisitor::visit(SlimeQueen& v) const
 {
     auto brood = v.detach_shards();
     for (auto* p : brood)
-        m_add2scene(p, p);
+        m_ed.on_create_emit(p, p, *p);
+
+    m_ed.on_terminate_emit(&v, &v, v);
 }

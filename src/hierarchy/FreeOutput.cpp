@@ -2,11 +2,12 @@
 
 #include <iomanip>
 #include <iostream>
+#include <cassert>
 
 namespace
 {
 template <typename T>
-void print_basic_stats(const T& npc)
+void print_basic_stats(T& npc)
 {
     std::cout
         << "\nHealth: " << npc.get_hp()
@@ -15,21 +16,26 @@ void print_basic_stats(const T& npc)
 }
 }
 
-void FreeOutput::visit(const Rat& rat) const
+void FreeOutput::visit(Attacker*, Defender*, Applier&) const
+{
+    assert(!"Can't reach here!");
+}
+
+void FreeOutput::visit(Rat& rat) const
 {
     std::cout << "Class: Rat";
     print_basic_stats(rat);
     std::cout << std::endl;
 }
 
-void FreeOutput::visit(const ArmoredRat& rat) const
+void FreeOutput::visit(ArmoredRat& rat) const
 {
     std::cout << "Class: Armored Rat";
     print_basic_stats(rat);
     std::cout << "\nArmor: " << rat.get_armor() << std::endl;
 }
 
-void FreeOutput::visit(const PlagueRat& rat) const
+void FreeOutput::visit(PlagueRat& rat) const
 {
     std::cout << "Class: Plague Rat";
     print_basic_stats(rat);
@@ -39,47 +45,49 @@ void FreeOutput::visit(const PlagueRat& rat) const
         << std::endl;
 }
 
-void FreeOutput::visit(const Hulk& hulk) const
+void FreeOutput::visit(Hulk& hulk) const
 {
     std::cout << "Class: Hulk";
     print_basic_stats(hulk);
     std::cout << std::endl;
 }
 
-void FreeOutput::visit(const Mimic& mimic) const
+void FreeOutput::visit(Mimic& mimic) const
 {
     std::cout << "Class: Mimic";
     print_basic_stats(mimic);
     std::cout << std::endl;
 }
 
-void FreeOutput::visit(const ZombieMimic& zmimic) const
+void FreeOutput::visit(ZombieMimic& zmimic) const
 {
-
+    std::cout << "Class: Zombie Mimic";
+    print_basic_stats(zmimic);
+    std::cout << std::endl;
 }
 
-void FreeOutput::visit(const Slime& slime) const
+void FreeOutput::visit(Slime& slime) const
 {
     std::cout << "Class: Slime";
     print_basic_stats(slime);
     std::cout << std::endl;
 }
 
-void FreeOutput::visit(const SlimeShard& slime) const
+void FreeOutput::visit(SlimeShard& slime) const
 {
     std::cout << "Class: Slime Shard";
     print_basic_stats(slime);
     std::cout << std::endl;
 }
 
-void FreeOutput::visit(const SlimeQueen& slime) const
+void FreeOutput::visit(SlimeQueen& slime) const
 {
     std::cout << "Class: Slime Queen";
     print_basic_stats(slime);
     std::cout << std::endl;
 }
 
-void FreeOutput::visit(const PoisonCloud& cloud) const
+void FreeOutput::visit(PoisonCloud& cloud) const
 {
     std::cout
         << "Class: Poison Cloud"
@@ -87,7 +95,7 @@ void FreeOutput::visit(const PoisonCloud& cloud) const
         << std::endl;
 }
 
-void FreeOutput::visit(const Door& door) const
+void FreeOutput::visit(Door& door) const
 {
     std::cout
         << "Class: Door"
@@ -96,7 +104,7 @@ void FreeOutput::visit(const Door& door) const
         << std::endl;
 }
 
-void FreeOutput::visit(const StonePortal& portal) const
+void FreeOutput::visit(StonePortal& portal) const
 {
     std::cout
         << "Class: Stone Portal"

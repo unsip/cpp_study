@@ -9,9 +9,7 @@
 class BestiaryFactory
 {
 public:
-    explicit BestiaryFactory(IEventDispatcher& ed) noexcept : m_ed(ed)
-    {}
-
+    explicit BestiaryFactory(IEventDispatcher& ed);
     std::tuple<std::string, Attacker*, Defender*> get_npc() const;
 
 private:

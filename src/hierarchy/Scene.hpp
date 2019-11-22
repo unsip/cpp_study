@@ -22,9 +22,22 @@ private:
     struct Cmp;
 
     template <class Key>
+    static auto binary_find(
+        std::vector<data<Key*>>& vec
+      , Key* key
+    );
+
+    template <class Key>
     static void binary_find_and_erase(
         std::vector<data<Key*>>& vec
       , Key* key
+    );
+
+    template <class Key>
+    static void binary_find_and_insert(
+        std::vector<data<Key*>>& vec
+      , Key* key
+      , std::string name
     );
 
     std::vector<data<Attacker*>> m_attackers;
@@ -32,7 +45,7 @@ private:
 
 public:
     explicit Scene(std::size_t npc_num, const BestiaryFactory&, IEventDispatcher&);
-    void add(std::string name, Attacker*, Defender*) override;
+    void add(const std::string& name, Attacker*, Defender*) override;
     void remove(Attacker*, Defender*) override;
 
     std::pair<std::string, const Attacker*> get_rnd_attacker() const;

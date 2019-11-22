@@ -1,23 +1,29 @@
 #include "DescriptionOutput.hpp"
 
 #include <iostream>
+#include <cassert>
 
-void DescriptionOutput::visit(const Rat& rat) const
+void DescriptionOutput::visit(Attacker*, Defender*, Applier&) const
+{
+    assert(!"Can't reach here!");
+}
+
+void DescriptionOutput::visit(Rat&) const
 {
     std::cout << "Simple rat. Nothing special." << std::endl;
 }
 
-void DescriptionOutput::visit(const ArmoredRat& rat) const
+void DescriptionOutput::visit(ArmoredRat&) const
 {
     std::cout << "Armored rat has armor, which diminishes incoming damage." << std::endl;
 }
 
-void DescriptionOutput::visit(const PlagueRat& rat) const
+void DescriptionOutput::visit(PlagueRat&) const
 {
     std::cout << "Plague rat rots on each incoming hit, which increases it's attack." << std::endl;
 }
 
-void DescriptionOutput::visit(const Hulk& hulk) const
+void DescriptionOutput::visit(Hulk&) const
 {
     std::cout <<
         "Hulk is very aggressive and tough. "
@@ -25,17 +31,23 @@ void DescriptionOutput::visit(const Hulk& hulk) const
         << std::endl;
 }
 
-void DescriptionOutput::visit(const Mimic& mimic) const
+void DescriptionOutput::visit(Mimic&) const
 {
     std::cout << "Mimic always has it's attack equal to health" << std::endl;
 }
 
-void DescriptionOutput::visit(const Slime& slime) const
+
+void DescriptionOutput::visit(ZombieMimic&) const
+{
+    std::cout << "Zombie Mimic reborns after death." << std::endl;
+}
+
+void DescriptionOutput::visit(Slime&) const
 {
     std::cout << "Regular slime, but gets healed on ammount of incoming damage." << std::endl;
 }
 
-void DescriptionOutput::visit(const SlimeShard& slime) const
+void DescriptionOutput::visit(SlimeShard&) const
 {
     std::cout <<
         "Slime shard was a part of something BIGGER once. "
@@ -43,7 +55,7 @@ void DescriptionOutput::visit(const SlimeShard& slime) const
         << std::endl;
 }
 
-void DescriptionOutput::visit(const SlimeQueen& slime) const
+void DescriptionOutput::visit(SlimeQueen&) const
 {
     std::cout <<
         "Mother of slimes. "
@@ -52,7 +64,7 @@ void DescriptionOutput::visit(const SlimeQueen& slime) const
         << std::endl;
 }
 
-void DescriptionOutput::visit(const PoisonCloud& cloud) const
+void DescriptionOutput::visit(PoisonCloud&) const
 {
     std::cout <<
         "Choking gas floating in space. "
@@ -60,12 +72,12 @@ void DescriptionOutput::visit(const PoisonCloud& cloud) const
         << std::endl;
 }
 
-void DescriptionOutput::visit(const Door& door) const
+void DescriptionOutput::visit(Door&) const
 {
     std::cout << "Just a solid door. What does lay behind?" << std::endl;
 }
 
-void DescriptionOutput::visit(const StonePortal& portal) const
+void DescriptionOutput::visit(StonePortal&) const
 {
     std::cout <<
         "Ancient portal leading to distant mysterious places. "

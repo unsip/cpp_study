@@ -23,7 +23,7 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 
@@ -39,7 +39,7 @@ public:
 
     std::size_t get_armor() const { return m_armor; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 
@@ -58,7 +58,7 @@ public:
     std::size_t get_rot() const { return m_rot; }
     std::size_t get_rot_stack() const { return m_rot_stack; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 
@@ -78,7 +78,7 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 
@@ -98,7 +98,7 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 
@@ -109,7 +109,6 @@ private:
     std::size_t m_reborn_hp;
     std::size_t m_reborn_cnt = 2;
     std::size_t m_strength;
-    std::size_t m_res_cnt = 0;
     const IEventDispatcher& m_ed;
 
 public:
@@ -121,7 +120,7 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
     bool reborn();
 };
 
@@ -142,7 +141,7 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 
@@ -161,7 +160,7 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 
@@ -182,7 +181,7 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
     void spawn_shards();
     std::vector<SlimeShard*> detach_shards();
 };
@@ -197,7 +196,7 @@ public:
     PoisonCloud(std::size_t strength) : m_strength(strength) {}
 
     std::size_t attack() const override { return m_strength; }
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 
@@ -215,12 +214,18 @@ public:
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };
 
 class StonePortal : public Door
 {
+private:
+    std::size_t m_armor;
+
 public:
+    explicit StonePortal(std::size_t hp, std::size_t armor, const IEventDispatcher& ed)
+        : Door(hp, ed), m_armor(armor)
+    {}
     void hit(std::size_t dmg) override;
-    void apply(const IBestiaryVisitor&) const override;
+    void apply(const IBestiaryVisitor&) override;
 };

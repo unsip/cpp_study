@@ -6,5 +6,5 @@ class IBestiaryVisitor;
 class Applier
 {
 public:
-    virtual void apply(const IBestiaryVisitor&) const = 0;
+    virtual void apply(const IBestiaryVisitor&) = 0;
 };

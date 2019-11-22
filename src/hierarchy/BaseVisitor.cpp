@@ -1,35 +1,37 @@
 #include "BaseVisitor.hpp"
 
-void BaseVisitor::visit(const Rat&) const {}
+void BaseVisitor::visit(Attacker*, Defender*, Applier&) const {}
 
-void BaseVisitor::visit:(const ArmoredRat& v) const
+void BaseVisitor::visit(Rat& v) const { visit(&v, &v, v); }
+
+void BaseVisitor::visit(ArmoredRat& v) const
 {
-    visit(static_cast<const Rat&>(v));
+    visit(static_cast<Rat&>(v));
 }
 
-void BaseVisitor::visit(const PlagueRat& v) const
+void BaseVisitor::visit(PlagueRat& v) const
 {
-    visit(static_cast<const Rat&>(v));
+    visit(static_cast<Rat&>(v));
 }
 
-void BaseVisitor::visit(const Hulk&) const {}
+void BaseVisitor::visit(Hulk& v) const { visit(&v, &v, v); }
 
-void BaseVisitor::visit(const Mimic&) const {}
+void BaseVisitor::visit(Mimic& v) const { visit(&v, &v, v); }
 
-void BaseVisitor::visit(const ZombieMimic&) const {}
+void BaseVisitor::visit(ZombieMimic& v) const { visit(&v, &v, v); }
 
-void BaseVisitor::visit(const Slime&) const {}
+void BaseVisitor::visit(Slime& v) const { visit(&v, &v, v); }
 
-void BaseVisitor::visit(const SlimeShard&) const {}
+void BaseVisitor::visit(SlimeShard& v) const { visit(&v, &v, v); }
 
-void BaseVisitor::visit(const SlimeQueen&) const {}
+void BaseVisitor::visit(SlimeQueen& v) const { visit(&v, &v, v); }
 
-void BaseVisitor::visit(const PoisonCloud&) const {}
+void BaseVisitor::visit(PoisonCloud& v) const { visit(&v, nullptr, v); }
 
-void BaseVisitor::visit(const Door&) const {}
+void BaseVisitor::visit(Door& v) const { visit(nullptr, &v, v); }
 
-void BaseVisitor::visit(const StonePortal& v) const
+void BaseVisitor::visit(StonePortal& v) const
 {
-    visit(static_cast<const Door&>(v));
+    visit(static_cast<Door&>(v));
 }
 

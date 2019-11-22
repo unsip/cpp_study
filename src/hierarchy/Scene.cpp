@@ -1,6 +1,7 @@
 #include "Scene.hpp"
 #include <algorithm>
 #include <random>
+#include <sstream>
 #include <stdexcept>
 #include <cstddef>
 #include <cassert>
@@ -21,6 +22,23 @@ struct Scene::Cmp
 };
 
 template <class Key>
+auto Scene::binary_find(
+    std::vector<data<Key*>>& vec
+  , Key* key
+)
+{
+    assert(key);
+
+    Cmp<Key> cmp;
+    return std::lower_bound(
+        vec.cbegin()
+      , vec.cend()
+      , Scene::data<Key*>{key, ""}
+      , cmp
+    );
+}
+
+template <class Key>
 void Scene::binary_find_and_erase(
     std::vector<data<Key*>>& vec
   , Key* key
@@ -29,22 +47,52 @@ void Scene::binary_find_and_erase(
     if (!key)
         return;
 
-    Cmp<Key> cmp;
-    auto it = std::lower_bound(
-        vec.cbegin()
-      , vec.cend()
-      , Scene::data<Key*>{key, ""}
-      , cmp
-    );
+    auto it = binary_find(vec, key);
 
     if (it != vec.cend())
         vec.erase(it);
+}
+
+template <class Key>
+void Scene::binary_find_and_insert(
+    std::vector<data<Key*>>& vec
+  , Key* key
+  , std::string name
+)
+{
+    if (!key)
+        return;
+
+    auto it = binary_find(vec, key);
+
+    vec.emplace(it, key, std::move(name));
 }
 
 Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher& ed)
 {
     m_attackers.reserve(npc_num);
     m_defenders.reserve(npc_num);
+
+    ed.is_dead_subscribe(
+        [this] (Attacker* a_npc, Defender* d_npc, Applier&)
+        {
+            assert(d_npc);
+            remove(a_npc, d_npc);
+        }
+    );
+
+    ed.on_create_subscribe(
+        [this] (Attacker* a_npc, Defender* d_npc, Applier&)
+        {
+            assert(d_npc);
+            ///@todo Not thread safe
+            static std::size_t cnt= 0;
+            std::stringstream ss;
+            ss << "Newborn " << cnt++;
+            add(ss.str(), a_npc, d_npc);
+        }
+    );
+
 
     for (std::size_t i = 0; i < npc_num; ++i)
     {
@@ -57,12 +105,12 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
     std::sort(m_defenders.begin(), m_defenders.end(), Cmp<Defender>{});
 }
 
-void Scene::add(std::string name, Attacker* aiface, Defender* diface)
+void Scene::add(const std::string& name, Attacker* aiface, Defender* diface)
 {
     if (aiface)
-        m_attackers.emplace_back(aiface, std::move(name));
+        binary_find_and_insert(m_attackers, aiface, name);
     if (diface)
-        m_defenders.emplace_back(diface, std::move(name));
+        binary_find_and_insert(m_defenders, diface, name);
 }
 
 void Scene::remove(Attacker* aiface, Defender* diface)
