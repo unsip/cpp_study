@@ -60,9 +60,9 @@ BestiaryFactory::BestiaryFactory(IEventDispatcher& ed) : m_ed(ed)
         }
     );
     ed.is_dead_subscribe(
-        [&ed] (Attacker*, Defender*, Applier& app_npc)
+        [&ed] (Attacker*, Defender* def, Applier& app_npc)
         {
-            DeathVisitor dv(ed);
+            DeathVisitor dv(def, ed);
             app_npc.apply(dv);
         }
     );
