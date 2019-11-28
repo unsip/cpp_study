@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
 #include <cassert>
 
 
@@ -101,7 +102,7 @@ void SlimeQueen::spawn_shards(std::size_t before_death_hp)
     std::size_t total = before_death_hp / 2;
     m_brood.reserve(total);
     for (std::size_t i = 0; i < total; ++i)
-        m_brood.emplace_back(new SlimeShard(2, m_ed));
+        m_brood.emplace_back(new SlimeShard(2));
 }
 
 std::vector<SlimeShard*> SlimeQueen::detach_shards()

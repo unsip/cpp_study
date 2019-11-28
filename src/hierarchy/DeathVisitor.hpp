@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseVisitor.hpp"
+#include "IEventDispatcher.hpp"
 
 class DeathVisitor : public BaseVisitor
 {

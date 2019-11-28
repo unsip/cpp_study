@@ -84,7 +84,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
             static std::uniform_int_distribution<> rat_hp_dis(10, 20);
             static std::uniform_int_distribution<> rat_strg_dis(1, 5);
             static std::size_t rat_num = 0;
-            Rat* r = new Rat(rat_hp_dis(gen), rat_strg_dis(gen), m_ed);
+            Rat* r = new Rat(rat_hp_dis(gen), rat_strg_dis(gen));
             app_npc = r;
             auto name = "Rat "s + std::to_string(rat_num++);
             result = decltype(result){name, r, r};
@@ -96,7 +96,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
             static std::uniform_int_distribution<> hulk_hp_dis(15, 30);
             static std::uniform_int_distribution<> hulk_strg_dis(2, 5);
             static std::size_t hulk_num = 0;
-            Hulk* r = new Hulk(hulk_hp_dis(gen), hulk_strg_dis(gen), m_ed);
+            Hulk* r = new Hulk(hulk_hp_dis(gen), hulk_strg_dis(gen));
             app_npc = r;
             auto name = "Hulk "s + std::to_string(hulk_num++);
             result = decltype(result){name, r, r};
@@ -107,7 +107,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
         {
             static std::uniform_int_distribution<> mimic_hp_dis(7, 12);
             static std::size_t mimic_num = 0;
-            Mimic* r = new Mimic(mimic_hp_dis(gen), m_ed);
+            Mimic* r = new Mimic(mimic_hp_dis(gen));
             app_npc = r;
             auto name = "Mimic "s + std::to_string(mimic_num++);
             result = decltype(result){name, r, r};
@@ -119,7 +119,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
             static std::uniform_int_distribution<> slime_hp_dis(2, 5);
             static std::uniform_int_distribution<> slime_strg_dis(1, 3);
             static std::size_t slime_num = 0;
-            Slime* r = new Slime(slime_hp_dis(gen), slime_strg_dis(gen), m_ed);
+            Slime* r = new Slime(slime_hp_dis(gen), slime_strg_dis(gen));
             app_npc = r;
             auto name = "Slime "s + std::to_string(slime_num++);
             result = decltype(result){name, r, r};
@@ -141,7 +141,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
         {
             static std::uniform_int_distribution<> door_hp_dis(5, 30);
             static std::size_t door_num = 0;
-            Door* r = new Door(door_hp_dis(gen), m_ed);
+            Door* r = new Door(door_hp_dis(gen));
             app_npc = r;
             auto name = "Door "s + std::to_string(door_num++);
             result = decltype(result){name, nullptr, r};
@@ -154,7 +154,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
             static std::uniform_int_distribution<> arm_rat_strg_dis(1, 5);
             static std::uniform_int_distribution<> arm_rat_armor_dis(1, 3);
             static std::size_t arm_rat_num = 0;
-            ArmoredRat* r = new ArmoredRat(arm_rat_hp_dis(gen), arm_rat_strg_dis(gen), arm_rat_armor_dis(gen), m_ed);
+            ArmoredRat* r = new ArmoredRat(arm_rat_hp_dis(gen), arm_rat_strg_dis(gen), arm_rat_armor_dis(gen));
             app_npc = r;
             auto name = "ArmoredRat "s + std::to_string(arm_rat_num++);
             result = decltype(result){name, r, r};
@@ -167,7 +167,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
             static std::uniform_int_distribution<> prat_strg_dis(1, 5);
             static std::uniform_int_distribution<> prat_rot_dis(1, 3);
             static std::size_t prat_num = 0;
-            PlagueRat* r = new PlagueRat(prat_hp_dis(gen), prat_strg_dis(gen), prat_rot_dis(gen), m_ed);
+            PlagueRat* r = new PlagueRat(prat_hp_dis(gen), prat_strg_dis(gen), prat_rot_dis(gen));
             app_npc = r;
             auto name = "PlagueRat "s + std::to_string(prat_num++);
             result = decltype(result){name, r, r};
@@ -179,7 +179,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
             static std::uniform_int_distribution<> sportal_hp_dis(40, 80);
             static std::uniform_int_distribution<> sportal_armor_dis(2, 5);
             static std::size_t sportal_num = 0;
-            StonePortal* r = new StonePortal(sportal_hp_dis(gen), sportal_armor_dis(gen), m_ed);
+            StonePortal* r = new StonePortal(sportal_hp_dis(gen), sportal_armor_dis(gen));
             app_npc = r;
             auto name = "StonePortal "s + std::to_string(sportal_num++);
             result = decltype(result){name, nullptr, r};
@@ -191,7 +191,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
             static std::uniform_int_distribution<> squeen_hp_dis(30, 60);
             static std::uniform_int_distribution<> squeen_strg_dis(5, 10);
             static std::size_t squeen_num = 0;
-            SlimeQueen* r = new SlimeQueen(squeen_hp_dis(gen), squeen_strg_dis(gen), m_ed);
+            SlimeQueen* r = new SlimeQueen(squeen_hp_dis(gen), squeen_strg_dis(gen));
             app_npc = r;
             auto name = "SlimeQueen "s + std::to_string(squeen_num++);
             result = decltype(result){name, r, r};
@@ -203,7 +203,7 @@ std::tuple<std::string, Attacker*, Defender*> BestiaryFactory::get_npc() const
             static std::uniform_int_distribution<> zmimic_hp_dis(10, 20);
             static std::uniform_int_distribution<> zmimic_strg_dis(1, 5);
             static std::size_t zmimic_num = 0;
-            ZombieMimic* r = new ZombieMimic(zmimic_hp_dis(gen), zmimic_strg_dis(gen), m_ed);
+            ZombieMimic* r = new ZombieMimic(zmimic_hp_dis(gen), zmimic_strg_dis(gen));
             app_npc = r;
             auto name = "ZombieMimic "s + std::to_string(zmimic_num++);
             result = decltype(result){name, r, r};
