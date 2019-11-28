@@ -10,10 +10,11 @@ class IEventDispatcher
 {
 public:
     using signal_type = std::function<void (Attacker*, Defender*, Applier&)>;
+    using dmg_signal = std::function<void (Attacker*, Defender*, Applier&, std::size_t dmg)>;
     virtual void is_dead_emit(Attacker*, Defender*, Applier&) const = 0;
     virtual void is_dead_subscribe(signal_type) = 0;
-    virtual void is_dmg_emit(Attacker*, Defender*, Applier&) const = 0;
-    virtual void is_dmg_subscribe(signal_type) = 0;
+    virtual void is_dmg_emit(Attacker*, Defender*, Applier&, std::size_t) const = 0;
+    virtual void is_dmg_subscribe(dmg_signal) = 0;
     virtual void is_hit_emit(Attacker*, Defender*, Applier&) const = 0;
     virtual void is_hit_subscribe(signal_type) = 0;
 

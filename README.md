@@ -3,6 +3,7 @@
 Small code snippets and notes on my way learning basic C++.
 
 # TODO
-0. Add implementation of `for_each_elem()`, `print_elem()` and `change_name()`
-   functions (linked list).
-1. Refactor state representation as `enum` (1's search).
+
+1. Design `EventDispatcher` to signal context data (f.e. `SlimeShards` names, etc).
+2. Fix bug when dead `Newborn` gets attacked (`EventDecorator` has to inherit
+   `Applier` interface).

@@ -3,19 +3,12 @@
 
 #include <algorithm>
 #include <limits>
+#include <cassert>
 
 
 void Rat::hit(std::size_t dmg)
 {
-    m_ed.is_hit_emit(this, this, *this);
-
     m_hp -= std::min(m_hp, dmg);
-
-    if (dmg)
-        m_ed.is_dmg_emit(this, this, *this);
-
-    if (is_dead())
-        m_ed.is_dead_emit(this, this, *this);
 }
 
 void Rat::apply(const IBestiaryVisitor& v)
@@ -48,19 +41,11 @@ void PlagueRat::apply(const IBestiaryVisitor& v)
 
 void Hulk::hit(std::size_t dmg)
 {
-    m_ed.is_hit_emit(this, this, *this);
-
     m_hp -= std::min(m_hp, dmg);
 
     m_strength = m_strength <= std::numeric_limits<std::size_t>::max() / 2
         ? m_strength * 2
         : std::numeric_limits<std::size_t>::max();
-
-    if (dmg)
-        m_ed.is_dmg_emit(this, this, *this);
-
-    if (is_dead())
-        m_ed.is_dead_emit(this, this, *this);
 }
 
 void Hulk::apply(const IBestiaryVisitor& v)
@@ -70,16 +55,8 @@ void Hulk::apply(const IBestiaryVisitor& v)
 
 void Mimic::hit(std::size_t dmg)
 {
-    m_ed.is_hit_emit(this, this, *this);
-
     m_hp -= std::min(m_hp, dmg);
     m_strength = m_hp;
-
-    if (dmg)
-        m_ed.is_dmg_emit(this, this, *this);
-
-    if (is_dead())
-        m_ed.is_dead_emit(this, this, *this);
 }
 
 void Mimic::apply(const IBestiaryVisitor& v)
@@ -89,15 +66,8 @@ void Mimic::apply(const IBestiaryVisitor& v)
 
 void Slime::hit(std::size_t dmg)
 {
-    m_ed.is_hit_emit(this, this, *this);
-
-    m_hp += std::min(dmg, std::numeric_limits<std::size_t>::max() - m_hp);
-
-    if (dmg)
-        m_ed.is_dmg_emit(this, this, *this);
-
-    if (is_dead())
-        m_ed.is_dead_emit(this, this, *this);
+    if (!is_dead())
+        m_hp += std::min(dmg, std::numeric_limits<std::size_t>::max() - m_hp);
 }
 
 void Slime::apply(const IBestiaryVisitor& v)
@@ -107,15 +77,7 @@ void Slime::apply(const IBestiaryVisitor& v)
 
 void SlimeShard::hit(std::size_t dmg)
 {
-    m_ed.is_hit_emit(this, this, *this);
-
     m_hp -= std::min(m_hp, dmg);
-
-    if (dmg)
-        m_ed.is_dmg_emit(this, this, *this);
-
-    if (is_dead())
-        m_ed.is_dead_emit(this, this, *this);
 }
 
 void SlimeShard::apply(const IBestiaryVisitor& v)
@@ -125,21 +87,7 @@ void SlimeShard::apply(const IBestiaryVisitor& v)
 
 void SlimeQueen::hit(std::size_t dmg)
 {
-    if (is_dead())
-        return;
-
-    m_ed.is_hit_emit(this, this, *this);
-    if (0 == dmg)
-        return;
-
-    if (dmg >= m_hp)
-        spawn_shards();
-
     m_hp -= std::min(m_hp, dmg);
-    m_ed.is_dmg_emit(this, this, *this);
-
-    if (is_dead())
-        m_ed.is_dead_emit(this, this, *this);
 }
 
 void SlimeQueen::apply(const IBestiaryVisitor& v)
@@ -147,9 +95,10 @@ void SlimeQueen::apply(const IBestiaryVisitor& v)
     v.visit(*this);
 }
 
-void SlimeQueen::spawn_shards()
+void SlimeQueen::spawn_shards(std::size_t before_death_hp)
 {
-    std::size_t total = get_hp() / 2;
+    assert(before_death_hp && "0 isn't damage!");
+    std::size_t total = before_death_hp / 2;
     m_brood.reserve(total);
     for (std::size_t i = 0; i < total; ++i)
         m_brood.emplace_back(new SlimeShard(2, m_ed));
@@ -162,15 +111,7 @@ std::vector<SlimeShard*> SlimeQueen::detach_shards()
 
 void Door::hit(std::size_t dmg)
 {
-    m_ed.is_hit_emit(nullptr, this, *this);
-
     m_hp -= std::min(m_hp, dmg);
-
-    if (dmg)
-        m_ed.is_dmg_emit(nullptr, this, *this);
-
-    if (is_dead())
-        m_ed.is_dead_emit(nullptr, this, *this);
 }
 
 void Door::apply(const IBestiaryVisitor& v)
@@ -200,18 +141,7 @@ void ZombieMimic::apply(const IBestiaryVisitor& v)
 
 void ZombieMimic::hit(std::size_t dmg)
 {
-    if (is_dead())
-        return;
-
-    m_ed.is_hit_emit(this, this, *this);
-    if (0 == dmg)
-        return;
-
     m_hp -= std::min(m_hp, dmg);
-    m_ed.is_dmg_emit(this, this, *this);
-
-    if (is_dead())
-        m_ed.is_dead_emit(this, this, *this);
 }
 
 bool ZombieMimic::reborn()

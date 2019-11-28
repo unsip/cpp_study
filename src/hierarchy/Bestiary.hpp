@@ -180,9 +180,10 @@ public:
     std::size_t attack() const override { return m_hp / 2; }
     bool is_dead() const override { return m_hp == 0; }
     std::size_t get_hp() const override { return m_hp; }
+    void set_hp(std::size_t hp) { m_hp = hp; }
     void hit(std::size_t dmg) override;
     void apply(const IBestiaryVisitor&) override;
-    void spawn_shards();
+    void spawn_shards(std::size_t before_death_hp);
     std::vector<SlimeShard*> detach_shards();
 };
 

@@ -6,10 +6,14 @@ add_library(
     BestiaryFactory.hpp
     Bestiary.cpp
     Bestiary.hpp
+    DamageVisitor.cpp
+    DamageVisitor.hpp
     DescriptionOutput.cpp
     DescriptionOutput.hpp
     DeathVisitor.cpp
     DeathVisitor.hpp
+    EventDecorator.cpp
+    EventDecorator.hpp
     EventDispatcher.cpp
     EventDispatcher.hpp
     FreeOutput.cpp
