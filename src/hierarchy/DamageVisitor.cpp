@@ -20,12 +20,12 @@ void DamageVisitor::visit(SlimeQueen& v) const
             // SlimeQueen splits in two
             SlimeQueen* q = new SlimeQueen(v.get_hp() / 2, v.attack());
             v.set_hp(v.get_hp() / 2);
-            m_ed.on_create_emit(q, new EventDecorator(q, q, *q, m_ed), *q);
+            m_ed.on_create_emit(q, new EventDecorator(q, q, *q, m_ed), *q, "SlimeQueen");
         }
         else if (d3(gen) == 3)
         {
             SlimeShard* s = new SlimeShard(m_dmg);
-            m_ed.on_create_emit(s, new EventDecorator(s, s, *s, m_ed), *s);
+            m_ed.on_create_emit(s, new EventDecorator(s, s, *s, m_ed), *s, "SlimeShard");
         }
     }
 }
