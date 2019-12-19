@@ -40,11 +40,19 @@ private:
       , std::string name
     );
 
+    void deallocate();
+
     std::vector<data<Attacker*>> m_attackers;
     std::vector<data<Defender*>> m_defenders;
 
 public:
     explicit Scene(std::size_t npc_num, const BestiaryFactory&, IEventDispatcher&);
+    ~Scene();
+
+    // Always think about assignment operators and copy/move constructors!
+    Scene(const Scene&) = delete;
+    Scene& operator = (const Scene&) = delete;
+
     void add(const std::string& name, Attacker*, Defender*) override;
     void remove(Attacker*, Defender*) override;
 

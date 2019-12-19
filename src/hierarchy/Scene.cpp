@@ -31,8 +31,8 @@ auto Scene::binary_find(
 
     Cmp<Key> cmp;
     return std::lower_bound(
-        vec.cbegin()
-      , vec.cend()
+        vec.begin()
+      , vec.end()
       , Scene::data<Key*>{key, ""}
       , cmp
     );
@@ -68,6 +68,21 @@ void Scene::binary_find_and_insert(
     vec.emplace(it, key, std::move(name));
 }
 
+void Scene::deallocate()
+{
+    for (auto& attacker : m_attackers)
+    {
+        for (auto& defender : m_defenders)
+            if (attacker.name == defender.name)
+                defender.ptr = nullptr;
+
+        delete attacker.ptr;
+    }
+
+    for (auto& defender : m_defenders)
+        delete defender.ptr;
+}
+
 Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher& ed)
 {
     m_attackers.reserve(npc_num);
@@ -93,18 +108,31 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
         }
     );
 
-
-    for (std::size_t i = 0; i < npc_num; ++i)
+    try
     {
-        auto [name, aiface, diface] = fact.get_npc();
-        /// @todo all event subscriptions
-        add(std::move(name), aiface, diface);
+        for (std::size_t i = 0; i < npc_num; ++i)
+        {
+            auto [name, aiface, diface] = fact.get_npc();
+            /// @todo all event subscriptions
+            add(std::move(name), aiface, diface);
+        }
+
+        std::sort(m_attackers.begin(), m_attackers.end(), Cmp<Attacker>{});
+        std::sort(m_defenders.begin(), m_defenders.end(), Cmp<Defender>{});
+    }
+    catch (...)
+    {
+        deallocate();
     }
 
-    std::sort(m_attackers.begin(), m_attackers.end(), Cmp<Attacker>{});
-    std::sort(m_defenders.begin(), m_defenders.end(), Cmp<Defender>{});
 }
 
+Scene::~Scene()
+{
+    deallocate();
+}
+
+// Implying that names are unique!
 void Scene::add(const std::string& name, Attacker* aiface, Defender* diface)
 {
     if (aiface)

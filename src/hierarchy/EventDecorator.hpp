@@ -21,6 +21,14 @@ public:
         if (!def_npc)
             throw std::runtime_error("Invalid decorable object!");
     }
+    ~EventDecorator()
+    {
+        delete m_def_npc;
+    }
+
+    EventDecorator(const EventDecorator&) = delete;
+    EventDecorator& operator = (const EventDecorator&) = delete;
+
 
     bool is_dead() const override;
     std::size_t get_hp() const override;
