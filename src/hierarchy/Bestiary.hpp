@@ -169,7 +169,7 @@ class SlimeQueen: public Attacker, public Defender, public Applier
 private:
     std::size_t m_hp;
     std::size_t m_strength;
-    std::vector<SlimeShard*> m_brood;
+    std::vector<std::unique_ptr<SlimeShard>> m_brood;
     const IEventDispatcher& m_ed;
 
 public:
@@ -184,7 +184,7 @@ public:
     void hit(std::size_t dmg) override;
     void apply(const IBestiaryVisitor&) override;
     void spawn_shards(std::size_t before_death_hp);
-    std::vector<SlimeShard*> detach_shards();
+    std::vector<std::unique_ptr<SlimeShard>> detach_shards();
 };
 
 

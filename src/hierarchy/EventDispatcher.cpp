@@ -33,13 +33,13 @@ void EventDispatcher::is_hit_subscribe(signal_type handler)
     m_is_hit_signals.push_back(handler);
 }
 
-void EventDispatcher::on_create_emit(Attacker* a_npc, Defender* d_npc, Applier& app_npc) const
+void EventDispatcher::on_create_emit(std::shared_ptr<Attacker> a_npc, std::shared_ptr<Defender> d_npc, Applier& app_npc) const
 {
     for (auto& signal : m_on_create_signals)
         signal(a_npc, d_npc, app_npc);
 }
 
-void EventDispatcher::on_create_subscribe(signal_type handler)
+void EventDispatcher::on_create_subscribe(on_create_signal handler)
 {
     m_on_create_signals.push_back(handler);
 }

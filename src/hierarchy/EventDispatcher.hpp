@@ -12,7 +12,7 @@ private:
     std::vector<dmg_signal> m_is_dmg_signals;
     std::vector<signal_type> m_is_hit_signals;
 
-    std::vector<signal_type> m_on_create_signals;
+    std::vector<on_create_signal> m_on_create_signals;
     std::vector<signal_type> m_on_terminate_signals;
 
 public:
@@ -23,8 +23,8 @@ public:
     void is_hit_emit(Attacker*, Defender*, Applier&) const override;
     void is_hit_subscribe(signal_type) override;
 
-    void on_create_emit(Attacker*, Defender*, Applier&) const override;
-    void on_create_subscribe(signal_type) override;
+    void on_create_emit(std::shared_ptr<Attacker>, std::shared_ptr<Defender>, Applier&) const override;
+    void on_create_subscribe(on_create_signal) override;
     void on_terminate_emit(Attacker*, Defender*, Applier&) const override;
     void on_terminate_subscribe(signal_type) override;
 };

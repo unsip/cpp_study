@@ -16,8 +16,15 @@ void DeathVisitor::visit(ZombieMimic& v) const
 void DeathVisitor::visit(SlimeQueen& v) const
 {
     auto brood = v.detach_shards();
-    for (auto* p : brood)
-        m_ed.on_create_emit(p, new EventDecorator(p, p, *p, m_ed), *p);
+    for (std::unique_ptr<SlimeShard>& p : brood)
+    {
+        std::shared_ptr<SlimeShard> t(std::move(p));
+        m_ed.on_create_emit(
+            t
+          , std::shared_ptr<Defender>(new EventDecorator(t, t, t, m_ed))
+          , *t
+        );
+    }
 
     m_ed.on_terminate_emit(&v, &v, v);
 }

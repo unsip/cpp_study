@@ -13,40 +13,47 @@ template <typename Key>
 struct Scene::Cmp
 {
     bool operator()(
-        const Scene::data<Key*>& lhv
-      , const Scene::data<Key*>& rhv
+        const Scene::data<Key>& lhv
+      , const Scene::data<Key>& rhv
     ) const
     {
         return lhv.ptr < rhv.ptr;
     }
 };
 
+template <typename Key>
+struct Scene::PtrCmp
+{
+    bool operator()(
+        const Scene::data<Key>& lhv
+      , const Key& rhv
+    ) const
+    {
+        return lhv.ptr.get() < &rhv;
+    }
+};
+
 template <class Key>
 auto Scene::binary_find(
-    std::vector<data<Key*>>& vec
-  , Key* key
+    std::vector<data<Key>>& vec
+  , const Key& key
 )
 {
-    assert(key);
-
-    Cmp<Key> cmp;
+    PtrCmp<Key> cmp;
     return std::lower_bound(
         vec.begin()
       , vec.end()
-      , Scene::data<Key*>{key, ""}
+      , key
       , cmp
     );
 }
 
 template <class Key>
 void Scene::binary_find_and_erase(
-    std::vector<data<Key*>>& vec
-  , Key* key
+    std::vector<data<Key>>& vec
+  , const Key& key
 )
 {
-    if (!key)
-        return;
-
     auto it = binary_find(vec, key);
 
     if (it != vec.cend())
@@ -55,32 +62,17 @@ void Scene::binary_find_and_erase(
 
 template <class Key>
 void Scene::binary_find_and_insert(
-    std::vector<data<Key*>>& vec
-  , Key* key
+    std::vector<data<Key>>& vec
+  , const std::shared_ptr<Key>& key
   , std::string name
 )
 {
     if (!key)
         return;
 
-    auto it = binary_find(vec, key);
+    auto it = binary_find(vec, *key);
 
     vec.emplace(it, key, std::move(name));
-}
-
-void Scene::deallocate()
-{
-    for (auto& attacker : m_attackers)
-    {
-        for (auto& defender : m_defenders)
-            if (attacker.name == defender.name)
-                defender.ptr = nullptr;
-
-        delete attacker.ptr;
-    }
-
-    for (auto& defender : m_defenders)
-        delete defender.ptr;
 }
 
 Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher& ed)
@@ -97,7 +89,7 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
     );
 
     ed.on_create_subscribe(
-        [this] (Attacker* a_npc, Defender* d_npc, Applier&)
+        [this] (std::shared_ptr<Attacker> a_npc, std::shared_ptr<Defender> d_npc, Applier&)
         {
             assert(d_npc);
             ///@todo Not thread safe
@@ -108,32 +100,19 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
         }
     );
 
-    try
+    for (std::size_t i = 0; i < npc_num; ++i)
     {
-        for (std::size_t i = 0; i < npc_num; ++i)
-        {
-            auto [name, aiface, diface] = fact.get_npc();
-            /// @todo all event subscriptions
-            add(std::move(name), aiface, diface);
-        }
-
-        std::sort(m_attackers.begin(), m_attackers.end(), Cmp<Attacker>{});
-        std::sort(m_defenders.begin(), m_defenders.end(), Cmp<Defender>{});
-    }
-    catch (...)
-    {
-        deallocate();
+        auto [name, aiface, diface] = fact.get_npc();
+        /// @todo all event subscriptions
+        add(std::move(name), aiface, diface);
     }
 
-}
-
-Scene::~Scene()
-{
-    deallocate();
+    std::sort(m_attackers.begin(), m_attackers.end(), Cmp<Attacker>{});
+    std::sort(m_defenders.begin(), m_defenders.end(), Cmp<Defender>{});
 }
 
 // Implying that names are unique!
-void Scene::add(const std::string& name, Attacker* aiface, Defender* diface)
+void Scene::add(const std::string& name, std::shared_ptr<Attacker> aiface, std::shared_ptr<Defender> diface)
 {
     if (aiface)
         binary_find_and_insert(m_attackers, aiface, name);
@@ -143,9 +122,13 @@ void Scene::add(const std::string& name, Attacker* aiface, Defender* diface)
 
 void Scene::remove(Attacker* aiface, Defender* diface)
 {
+    assert(aiface || diface);
     /// @todo What about nullptrs?
-    binary_find_and_erase(m_attackers, aiface);
-    binary_find_and_erase(m_defenders, diface);
+    if (aiface)
+        binary_find_and_erase(m_attackers, *aiface);
+
+    if (diface)
+        binary_find_and_erase(m_defenders, *diface);
 }
 
 bool Scene::is_last_man_standing() const
@@ -158,7 +141,7 @@ bool Scene::is_last_man_standing() const
         );
 }
 
-std::pair<std::string, const Attacker*> Scene::get_rnd_attacker() const
+std::pair<std::string, std::shared_ptr<Attacker>> Scene::get_rnd_attacker() const
 {
     if (m_attackers.empty())
         throw std::runtime_error("List of attackers is empty.");
@@ -171,7 +154,7 @@ std::pair<std::string, const Attacker*> Scene::get_rnd_attacker() const
     return {it->name, it->ptr};
 }
 
-std::pair<std::string, Defender*> Scene::get_rnd_defender() const
+std::pair<std::string, std::shared_ptr<Defender>> Scene::get_rnd_defender() const
 {
     if (m_defenders.empty())
         throw std::runtime_error("List of defenders is empty.");

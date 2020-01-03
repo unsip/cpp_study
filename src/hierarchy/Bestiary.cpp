@@ -104,9 +104,11 @@ void SlimeQueen::spawn_shards(std::size_t before_death_hp)
         m_brood.emplace_back(new SlimeShard(2, m_ed));
 }
 
-std::vector<SlimeShard*> SlimeQueen::detach_shards()
+std::vector<std::unique_ptr<SlimeShard>> SlimeQueen::detach_shards()
 {
-    return std::move(m_brood);
+    decltype(m_brood) tmp;
+    tmp.swap(m_brood);
+    return tmp;
 }
 
 void Door::hit(std::size_t dmg)

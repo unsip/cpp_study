@@ -20,14 +20,14 @@ void DamageVisitor::visit(SlimeQueen& v) const
         if (d6(gen) == 6)
         {
             // SlimeQueen splits in two
-            SlimeQueen* q = new SlimeQueen(v.get_hp() / 2, v.attack(), m_ed);
+            std::shared_ptr<SlimeQueen> q(new SlimeQueen(v.get_hp() / 2, v.attack(), m_ed));
             v.set_hp(v.get_hp() / 2);
-            m_ed.on_create_emit(q, new EventDecorator(q, q, *q, m_ed), *q);
+            m_ed.on_create_emit(q, std::shared_ptr<Defender>(new EventDecorator(q, q, q, m_ed)), *q);
         }
         else if (d3(gen) == 3)
         {
-            SlimeShard* s = new SlimeShard(m_dmg, m_ed);
-            m_ed.on_create_emit(s, new EventDecorator(s, s, *s, m_ed), *s);
+            std::shared_ptr<SlimeShard> s(new SlimeShard(m_dmg, m_ed));
+            m_ed.on_create_emit(s, std::shared_ptr<Defender>(new EventDecorator(s, s, s, m_ed)), *s);
         }
     }
 }

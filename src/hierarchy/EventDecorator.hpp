@@ -3,6 +3,7 @@
 #include "IBestiary.hpp"
 #include "IEventDispatcher.hpp"
 
+#include <memory>
 #include <stdexcept>
 
 
@@ -10,20 +11,19 @@ class EventDecorator : public Defender//, public Applier
 {
 private:
     IEventDispatcher& m_ed;
-    Attacker* m_att_npc;
-    Applier& m_app_npc;
-    Defender* m_def_npc;
+    std::shared_ptr<Attacker> m_att_npc;
+    std::shared_ptr<Applier> m_app_npc;
+    std::shared_ptr<Defender> m_def_npc;
 
 public:
-    EventDecorator(Attacker* att_npc, Defender* def_npc, Applier& app_npc, IEventDispatcher& ed)
+    EventDecorator(std::shared_ptr<Attacker> att_npc, std::shared_ptr<Defender> def_npc, std::shared_ptr<Applier> app_npc, IEventDispatcher& ed)
         : m_ed(ed), m_att_npc(att_npc), m_app_npc(app_npc), m_def_npc(def_npc)
     {
         if (!def_npc)
             throw std::runtime_error("Invalid decorable object!");
-    }
-    ~EventDecorator()
-    {
-        delete m_def_npc;
+
+        if (!app_npc)
+            throw std::runtime_error("Missing Applier interface!");
     }
 
     EventDecorator(const EventDecorator&) = delete;
