@@ -7,9 +7,9 @@ template <class Tag>
 class Id
 {
 private:
-    void* m_id;
+    const void* m_id;
 public:
-    explicit Id(void* id) : m_id(id) {}
+    explicit Id(const void* id) : m_id(id) {}
     friend bool operator== (const Id& lhv, const Id& rhv) { return lhv.m_id == rhv.m_id; }
     friend bool operator!= (const Id& lhv, const Id& rhv) { return !(lhv == rhv); }
 };
@@ -21,12 +21,17 @@ class MyTag {};
 template <class Tag>
 class Compariable
 {
-public:
+protected:
     using MyId = Id<Tag>;
 
-    virtual ~Compariable() = default;
+    static MyId obj_id(const Compariable& obj) { return obj.id(); }
 
-    virtual MyId id() { return MyId(this); }
+private:
+    virtual MyId id() const { return MyId(this); }
+
+public:
+    virtual ~Compariable() = default;
+    friend bool is(const Compariable& lhv, const Compariable& rhv) { return lhv.id() == rhv.id(); }
 };
 
 
@@ -73,10 +78,10 @@ class DecoratorB : public IfaceB
 {
 private:
     IfaceB* m_iface_b;
+
+    MyId id() const override { return Compariable::obj_id(*m_iface_b); }
 public:
     DecoratorB(IfaceB* b) : m_iface_b(b) {}
-
-    MyId id() override { return m_iface_b->id(); }
 
     std::string do_b() override { return "DecoratorB::" + m_iface_b->do_b(); }
 };

@@ -42,7 +42,6 @@ int main()
         assert(dec_b.do_b() == "DecoratorB::B::do_b()");
     } // Case 2.
 
-
     {
 
         IfaceA* iface_a = new A();
@@ -63,15 +62,27 @@ int main()
 
         assert(dynamic_cast<IfaceA*>(iface_b) == nullptr);
 
-        assert(dynamic_cast<IfaceA*>(b_iface_c) == a_iface_c && b_iface_c->id() == a_iface_c->id());
-        assert(dynamic_cast<IfaceB*>(a_iface_c) == b_iface_c && a_iface_c->id() == b_iface_c->id());
+        assert(dynamic_cast<IfaceA*>(b_iface_c) == a_iface_c && is(*b_iface_c, *a_iface_c));
+        assert(dynamic_cast<IfaceB*>(a_iface_c) == b_iface_c && is(*a_iface_c, *b_iface_c));
 
         assert(dynamic_cast<C*>(b_iface_c) == a_iface_c);
         assert(dynamic_cast<C*>(a_iface_c) == b_iface_c);
 
-        assert(dec_b != iface_b && dec_b->id() == iface_b->id());
+        assert(dec_b != iface_b && is(*dec_b, *iface_b) && is(*iface_b, *dec_b));
 
-        assert(iface_a->id() != iface_b->id());
-        assert(iface_a != a_iface_c && iface_a->id() != a_iface_c->id());
+        assert(!is(*iface_a, *iface_b) && !is(*iface_b, *iface_a));
+        assert(iface_a != a_iface_c && !is(*iface_a, *a_iface_c));
     } // Case 3.
+
+    {
+        IfaceB* iface_bc = new C();
+
+        IfaceB* dec_ba = new DecoratorB(iface_bc);
+        IfaceB* dec_bb = new DecoratorB(iface_bc);
+
+        IfaceB* dec_dec_b = new DecoratorB(dec_bb);
+
+        assert(is(*iface_bc, *dec_bb));
+        assert(is(*iface_bc, *dec_dec_b));
+    } // Case 4.
 }
