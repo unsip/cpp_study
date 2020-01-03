@@ -15,6 +15,8 @@ private:
     std::shared_ptr<Applier> m_app_npc;
     std::shared_ptr<Defender> m_def_npc;
 
+    IdType id() const override { return get_id(*m_def_npc); }
+
 public:
     EventDecorator(std::shared_ptr<Attacker> att_npc, std::shared_ptr<Defender> def_npc, std::shared_ptr<Applier> app_npc, IEventDispatcher& ed)
         : m_ed(ed), m_att_npc(att_npc), m_app_npc(app_npc), m_def_npc(def_npc)

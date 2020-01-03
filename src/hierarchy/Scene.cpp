@@ -13,23 +13,19 @@ template <typename Key>
 struct Scene::Cmp
 {
     bool operator()(
-        const Scene::data<Key>& lhv
-      , const Scene::data<Key>& rhv
+        const data<Key>& lhv
+      , const data<Key>& rhv
     ) const
     {
-        return lhv.ptr < rhv.ptr;
+        return is_predecessor(*lhv.ptr, *rhv.ptr);
     }
-};
 
-template <typename Key>
-struct Scene::PtrCmp
-{
     bool operator()(
         const Scene::data<Key>& lhv
       , const Key& rhv
     ) const
     {
-        return lhv.ptr.get() < &rhv;
+        return is_predecessor(*lhv.ptr, rhv);
     }
 };
 
@@ -39,7 +35,7 @@ auto Scene::binary_find(
   , const Key& key
 )
 {
-    PtrCmp<Key> cmp;
+    Cmp<Key> cmp;
     return std::lower_bound(
         vec.begin()
       , vec.end()
@@ -58,6 +54,8 @@ void Scene::binary_find_and_erase(
 
     if (it != vec.cend())
         vec.erase(it);
+    else
+        assert(false);
 }
 
 template <class Key>

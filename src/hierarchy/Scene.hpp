@@ -18,11 +18,8 @@ private:
         std::string name;
     };
 
-    template <typename T>
+    template <typename Key>
     struct Cmp;
-
-    template <typename T>
-    struct PtrCmp;
 
     template <class Key>
     static auto binary_find(
