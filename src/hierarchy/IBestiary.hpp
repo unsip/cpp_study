@@ -12,7 +12,7 @@ private:
 public:
     explicit Id(const T* id) : m_id(id) {}
     bool operator== (const Id& rhv) const { return m_id == rhv.m_id; }
-    bool operator< (const Id& rhv) const { return m_id == rhv.m_id; }
+    bool operator< (const Id& rhv) const { return m_id < rhv.m_id; }
 };
 
 
@@ -30,7 +30,11 @@ protected:
 public:
     friend bool is_same(const Compariable& lhv, const Compariable& rhv) { return lhv.id() == rhv.id(); }
     friend bool is_predecessor(const Compariable& lhv, const Compariable& rhv) { return lhv.id() < rhv.id(); }
+
+    virtual ~Compariable() = 0;
 };
+
+inline Compariable::~Compariable() = default;
 
 
 class Attacker : virtual public Compariable
