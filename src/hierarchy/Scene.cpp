@@ -54,8 +54,6 @@ void Scene::binary_find_and_erase(
 
     if (it != vec.cend())
         vec.erase(it);
-    else
-        assert(false);
 }
 
 template <class Key>
@@ -81,7 +79,6 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
     ed.is_dead_subscribe(
         [this] (Attacker* a_npc, Defender* d_npc, Applier&)
         {
-            assert(d_npc);
             remove(a_npc, d_npc);
         }
     );
@@ -89,7 +86,6 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
     ed.on_create_subscribe(
         [this] (std::shared_ptr<Attacker> a_npc, std::shared_ptr<Defender> d_npc, Applier&)
         {
-            assert(d_npc);
             ///@todo Not thread safe
             static std::size_t cnt= 0;
             std::stringstream ss;
@@ -112,6 +108,8 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
 // Implying that names are unique!
 void Scene::add(const std::string& name, std::shared_ptr<Attacker> aiface, std::shared_ptr<Defender> diface)
 {
+    assert(aiface || diface);
+    assert(!(aiface && diface) || is_same(*aiface, *diface));
     if (aiface)
         binary_find_and_insert(m_attackers, aiface, name);
     if (diface)
@@ -121,6 +119,7 @@ void Scene::add(const std::string& name, std::shared_ptr<Attacker> aiface, std::
 void Scene::remove(Attacker* aiface, Defender* diface)
 {
     assert(aiface || diface);
+    assert(!(aiface && diface) || is_same(*aiface, *diface));
     /// @todo What about nullptrs?
     if (aiface)
         binary_find_and_erase(m_attackers, *aiface);
