@@ -82,13 +82,13 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
     );
 
     ed.on_create_subscribe(
-        [this] (Attacker* a_npc, Defender* d_npc, Applier&)
+        [this] (Attacker* a_npc, Defender* d_npc, Applier&, std::string name)
         {
             assert(d_npc);
             ///@todo Not thread safe
             static std::size_t cnt= 0;
             std::stringstream ss;
-            ss << "Newborn " << cnt++;
+            ss << "Newborn " << std::move(name) << " " << cnt++;
             add(ss.str(), a_npc, d_npc);
         }
     );

@@ -12,22 +12,20 @@ void DamageVisitor::visit(SlimeQueen& v) const
     static std::uniform_int_distribution<unsigned> d6(1, 6);
 
     if (v.is_dead())
-    {
         v.spawn_shards(m_dmg);
-    }
     else
     {
         if (d6(gen) == 6)
         {
             // SlimeQueen splits in two
-            SlimeQueen* q = new SlimeQueen(v.get_hp() / 2, v.attack(), m_ed);
+            SlimeQueen* q = new SlimeQueen(v.get_hp() / 2, v.attack());
             v.set_hp(v.get_hp() / 2);
-            m_ed.on_create_emit(q, new EventDecorator(q, q, *q, m_ed), *q);
+            m_ed.on_create_emit(q, new EventDecorator(q, q, *q, m_ed), *q, "SlimeQueen");
         }
         else if (d3(gen) == 3)
         {
-            SlimeShard* s = new SlimeShard(m_dmg, m_ed);
-            m_ed.on_create_emit(s, new EventDecorator(s, s, *s, m_ed), *s);
+            SlimeShard* s = new SlimeShard(m_dmg);
+            m_ed.on_create_emit(s, new EventDecorator(s, s, *s, m_ed), *s, "SlimeShard");
         }
     }
 }

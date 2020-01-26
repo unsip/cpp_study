@@ -1,9 +1,9 @@
 #pragma once
 
-#include "IEventDispatcher.hpp"
 #include "IBestiary.hpp"
 #include "IApplier.hpp"
 
+#include <vector>
 #include <cstddef>
 
 
@@ -12,11 +12,10 @@ class Rat : public Attacker, public Defender, public Applier
 private:
     std::size_t m_hp;
     std::size_t m_strength;
-    const IEventDispatcher& m_ed;
 
 public:
-    Rat(std::size_t hp, std::size_t strength, const IEventDispatcher& ed)
-        : m_hp(hp), m_strength(strength), m_ed(ed)
+    Rat(std::size_t hp, std::size_t strength)
+        : m_hp(hp), m_strength(strength)
     {}
 
     std::size_t attack() const override { return m_strength; }
@@ -33,8 +32,8 @@ private:
     std::size_t m_armor;
 
 public:
-    ArmoredRat(std::size_t hp, std::size_t strength, std::size_t armor, const IEventDispatcher& ed)
-        : Rat(hp, strength, ed), m_armor(armor)
+    ArmoredRat(std::size_t hp, std::size_t strength, std::size_t armor)
+        : Rat(hp, strength), m_armor(armor)
     {}
 
     std::size_t get_armor() const { return m_armor; }
@@ -50,8 +49,8 @@ private:
     std::size_t m_rot_stack = 0;
 
 public:
-    PlagueRat(std::size_t hp, std::size_t strength, std::size_t rot, const IEventDispatcher& ed)
-        : Rat(hp, strength, ed), m_rot(rot)
+    PlagueRat(std::size_t hp, std::size_t strength, std::size_t rot)
+        : Rat(hp, strength), m_rot(rot)
     {}
 
     std::size_t attack() const override { return Rat::attack() + m_rot_stack; }
@@ -67,11 +66,10 @@ class Hulk : public Attacker, public Defender, public Applier
 private:
     std::size_t m_hp;
     std::size_t m_strength;
-    const IEventDispatcher& m_ed;
 
 public:
-    Hulk(std::size_t hp, std::size_t strength, const IEventDispatcher& ed)
-        : m_hp(hp), m_strength(strength), m_ed(ed)
+    Hulk(std::size_t hp, std::size_t strength)
+        : m_hp(hp), m_strength(strength)
     {}
 
     std::size_t attack() const override { return m_strength; }
@@ -87,11 +85,10 @@ class Mimic : public Attacker, public Defender, public Applier
 private:
     std::size_t m_hp;
     std::size_t m_strength;
-    const IEventDispatcher& m_ed;
 
 public:
-    explicit Mimic(std::size_t hp, const IEventDispatcher& ed)
-        : m_hp(hp), m_strength(hp), m_ed(ed)
+    explicit Mimic(std::size_t hp)
+        : m_hp(hp), m_strength(hp)
     {}
 
     std::size_t attack() const override { return m_strength; }
@@ -109,11 +106,10 @@ private:
     std::size_t m_reborn_hp;
     std::size_t m_reborn_cnt = 2;
     std::size_t m_strength;
-    const IEventDispatcher& m_ed;
 
 public:
-    explicit ZombieMimic(std::size_t hp, std::size_t strength, const IEventDispatcher& ed)
-        : m_hp(hp), m_reborn_hp(hp / 2), m_strength(strength), m_ed(ed)
+    explicit ZombieMimic(std::size_t hp, std::size_t strength)
+        : m_hp(hp), m_reborn_hp(hp / 2), m_strength(strength)
     {}
 
     std::size_t attack() const override { return m_strength; }
@@ -130,11 +126,10 @@ class Slime : public Attacker, public Defender, public Applier
 private:
     std::size_t m_hp;
     std::size_t m_strength;
-    const IEventDispatcher& m_ed;
 
 public:
-    Slime(std::size_t hp, std::size_t strength, const IEventDispatcher& ed)
-        : m_hp(hp), m_strength(strength), m_ed(ed)
+    Slime(std::size_t hp, std::size_t strength)
+        : m_hp(hp), m_strength(strength)
     {}
 
     std::size_t attack() const override { return m_strength; }
@@ -149,11 +144,10 @@ class SlimeShard : public Attacker, public Defender, public Applier
 {
 private:
     std::size_t m_hp;
-    const IEventDispatcher& m_ed;
 
 public:
-    SlimeShard(std::size_t hp, const IEventDispatcher& ed)
-        : m_hp(hp), m_ed(ed)
+    SlimeShard(std::size_t hp)
+        : m_hp(hp)
     {}
 
     std::size_t attack() const override { return m_hp / 2; }
@@ -170,11 +164,10 @@ private:
     std::size_t m_hp;
     std::size_t m_strength;
     std::vector<SlimeShard*> m_brood;
-    const IEventDispatcher& m_ed;
 
 public:
-    SlimeQueen(std::size_t hp, std::size_t strength, const IEventDispatcher& ed)
-        : m_hp(hp), m_strength(strength), m_ed(ed)
+    SlimeQueen(std::size_t hp, std::size_t strength)
+        : m_hp(hp), m_strength(strength)
     {}
 
     std::size_t attack() const override { return m_hp / 2; }
@@ -205,11 +198,10 @@ class Door : public Defender, public Applier
 {
 private:
     std::size_t m_hp;
-    const IEventDispatcher& m_ed;
 
 public:
-    explicit Door(std::size_t hp, const IEventDispatcher& ed)
-        : m_hp(hp), m_ed(ed)
+    explicit Door(std::size_t hp)
+        : m_hp(hp)
     {}
 
     bool is_dead() const override { return m_hp == 0; }
@@ -224,8 +216,8 @@ private:
     std::size_t m_armor;
 
 public:
-    explicit StonePortal(std::size_t hp, std::size_t armor, const IEventDispatcher& ed)
-        : Door(hp, ed), m_armor(armor)
+    explicit StonePortal(std::size_t hp, std::size_t armor)
+        : Door(hp), m_armor(armor)
     {}
     void hit(std::size_t dmg) override;
     void apply(const IBestiaryVisitor&) override;

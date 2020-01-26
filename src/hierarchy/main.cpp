@@ -37,8 +37,8 @@ int main()
         auto dmg = a.second->attack();
 
         using namespace std;
-        cout << setw(15) << a.first << " attacks (" << setw(3) << dmg << ") "
-            << setw(20) << d.first << " (" << setw(2) << d.second->get_hp() << " hp";
+        cout << setw(27) << a.first << " attacks (" << setw(3) << dmg << ") "
+            << setw(27) << d.first << " (" << setw(2) << d.second->get_hp() << " hp";
         d.second->hit(dmg);
         cout << " --> " << setw(3) << d.second->get_hp() << " hp)" << endl;
     }

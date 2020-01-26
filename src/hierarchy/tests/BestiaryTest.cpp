@@ -6,12 +6,11 @@
 class BestiaryTest : public ::testing::Test
 {
 public:
-    EventDispatcher ed;
 };
 
 TEST_F(BestiaryTest, SimpleRatTest)
 {
-    Rat r{10, 1, ed};
+    Rat r{10, 1};
     r.hit(9);
 
     EXPECT_EQ(1, r.get_hp());
@@ -21,7 +20,7 @@ TEST_F(BestiaryTest, SimpleRatTest)
 
 TEST_F(BestiaryTest, SimplePlagueRatTest)
 {
-    PlagueRat r{10, 1, 1, ed};
+    PlagueRat r{10, 1, 1};
     r.hit(0);
 
     EXPECT_EQ(9, r.get_hp());
@@ -31,7 +30,7 @@ TEST_F(BestiaryTest, SimplePlagueRatTest)
 
 TEST_F(BestiaryTest, SimpleArmoredRatTest)
 {
-    ArmoredRat r{10, 1, 2, ed};
+    ArmoredRat r{10, 1, 2};
 
     r.hit(0);
     EXPECT_EQ(10, r.get_hp());
@@ -49,7 +48,7 @@ TEST_F(BestiaryTest, SimpleArmoredRatTest)
 
 TEST_F(BestiaryTest, PlagueRatDeathTest)
 {
-    PlagueRat r1{10, 1, 1, ed};
+    PlagueRat r1{10, 1, 1};
     r1.hit(9);
     EXPECT_TRUE(r1.is_dead());
     EXPECT_EQ(0, r1.get_hp());
