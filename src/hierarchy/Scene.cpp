@@ -1,4 +1,7 @@
 #include "Scene.hpp"
+#include <unordered_map>
+#include <unordered_set>
+#include <iterator>
 #include <algorithm>
 #include <random>
 #include <sstream>
@@ -9,77 +12,76 @@
 static std::random_device rd;
 static std::mt19937 gen{rd()};
 
-template <typename Key>
-struct Scene::Cmp
-{
-    bool operator()(
-        const data<Key>& lhv
-      , const data<Key>& rhv
-    ) const
-    {
-        return is_predecessor(*lhv.ptr, *rhv.ptr);
-    }
 
-    bool operator()(
-        const Scene::data<Key>& lhv
-      , const Key& rhv
-    ) const
-    {
-        return is_predecessor(*lhv.ptr, rhv);
+template <typename T>
+struct data
+{
+private:
+    std::shared_ptr<T> m_sp;
+    const Comparable& m_r;
+public:
+    data(std::shared_ptr<T> p) : m_sp(std::move(p)), m_r(*m_sp) {}
+    data(const Comparable& r) : m_r(r) {}
+
+    operator std::shared_ptr<T> () const { return m_sp; }
+    operator const Comparable& () const { return m_r; }
+    friend bool operator==(const data& lhv, const data& rhv) {
+        return is_same(lhv.m_r, rhv.m_r);
     }
+    friend class std::hash<data<T>>;
 };
 
-template <class Key>
-auto Scene::binary_find(
-    std::vector<data<Key>>& vec
-  , const Key& key
-)
-{
-    Cmp<Key> cmp;
-    return std::lower_bound(
-        vec.begin()
-      , vec.end()
-      , key
-      , cmp
-    );
+
+namespace std {
+    template <>
+    struct hash<::data<Attacker>> {
+        size_t operator() (const ::data<Attacker>& d) const noexcept {
+            return d.m_r.hash();
+        }
+    };
+
+    template <>
+    struct hash<::data<Defender>> {
+        size_t operator() (const ::data<Defender>& d) const noexcept {
+            return d.m_r.hash();
+        }
+    };
 }
 
-template <class Key>
-void Scene::binary_find_and_erase(
-    std::vector<data<Key>>& vec
-  , const Key& key
-)
+
+struct Scene::Impl
 {
-    auto it = binary_find(vec, key);
+    struct Cmp
+    {
+        bool operator()(
+            const std::shared_ptr<Comparable>& lhv,
+            const std::shared_ptr<Comparable>& rhv
+        ) const
+        {
+            if (lhv && rhv)
+                return is_same(*lhv, *rhv);
 
-    if (it != vec.cend())
-        vec.erase(it);
-}
+            return false;
+        }
+    };
 
-template <class Key>
-void Scene::binary_find_and_insert(
-    std::vector<data<Key>>& vec
-  , const std::shared_ptr<Key>& key
-  , std::string name
-)
-{
-    if (!key)
-        return;
+    std::unordered_map<std::shared_ptr<Comparable>, std::string, std::hash<std::shared_ptr<Comparable>>, Cmp> m_names;
+    std::unordered_set<data<Attacker>> m_attackers;
+    std::unordered_set<data<Defender>> m_defenders;
+};
 
-    auto it = binary_find(vec, *key);
-
-    vec.emplace(it, key, std::move(name));
-}
 
 Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher& ed)
+    : m_pimpl(new Scene::Impl())
 {
-    m_attackers.reserve(npc_num);
-    m_defenders.reserve(npc_num);
+    m_pimpl->m_attackers.reserve(npc_num);
+    m_pimpl->m_defenders.reserve(npc_num);
 
     ed.is_dead_subscribe(
         [this] (Attacker* a_npc, Defender* d_npc, Applier&)
         {
-            remove(a_npc, d_npc);
+            assert(a_npc || d_npc);
+            remove(a_npc? static_cast<Comparable&>(*a_npc) : static_cast<Comparable&>(*d_npc));
         }
     );
 
@@ -100,66 +102,80 @@ Scene::Scene(std::size_t npc_num, const BestiaryFactory& fact, IEventDispatcher&
         /// @todo all event subscriptions
         add(std::move(name), aiface, diface);
     }
-
-    std::sort(m_attackers.begin(), m_attackers.end(), Cmp<Attacker>{});
-    std::sort(m_defenders.begin(), m_defenders.end(), Cmp<Defender>{});
 }
+
+Scene::~Scene() = default;
 
 // Implying that names are unique!
 void Scene::add(const std::string& name, std::shared_ptr<Attacker> aiface, std::shared_ptr<Defender> diface)
 {
+    // TODO: Think whether these constraints are interface contracts (in which
+    // case we should throw exception).
     assert(aiface || diface);
     assert(!(aiface && diface) || is_same(*aiface, *diface));
+
+    auto pr = m_pimpl->m_names.insert(std::pair<std::shared_ptr<Comparable>, std::string>{aiface, name});
+    assert(pr.second && "Unique constraint violated! We can't have multiple creatures in the same map.");
+
     if (aiface)
-        binary_find_and_insert(m_attackers, aiface, name);
+    {
+        auto pr = m_pimpl->m_attackers.insert(aiface).second;
+        assert(pr && "Unique Attacker constraint violated!");
+    }
+
     if (diface)
-        binary_find_and_insert(m_defenders, diface, name);
+    {
+        auto pr = m_pimpl->m_defenders.insert(diface).second;
+        assert(pr && "Unique Defender constraint violated!");
+    }
 }
 
-void Scene::remove(Attacker* aiface, Defender* diface)
+void Scene::remove(const Comparable& obj)
 {
-    assert(aiface || diface);
-    assert(!(aiface && diface) || is_same(*aiface, *diface));
-    /// @todo What about nullptrs?
-    if (aiface)
-        binary_find_and_erase(m_attackers, *aiface);
-
-    if (diface)
-        binary_find_and_erase(m_defenders, *diface);
+    m_pimpl->m_attackers.erase(obj);
+    m_pimpl->m_defenders.erase(obj);
 }
 
 bool Scene::is_last_man_standing() const
 {
-    return m_defenders.empty()
-        || m_attackers.empty()
-        || (m_attackers.size() == 1
-            && m_defenders.size() == 1
-            && m_defenders.front().name == m_attackers.front().name
+    return m_pimpl->m_defenders.empty()
+        || m_pimpl->m_attackers.empty() || (m_pimpl->m_attackers.size() == 1
+            && m_pimpl->m_defenders.size() == 1
+            && is_same(*m_pimpl->m_defenders.cbegin(), *m_pimpl->m_attackers.cbegin())
         );
 }
 
 std::pair<std::string, std::shared_ptr<Attacker>> Scene::get_rnd_attacker() const
 {
-    if (m_attackers.empty())
+    if (m_pimpl->m_attackers.empty())
         throw std::runtime_error("List of attackers is empty.");
 
-    std::uniform_int_distribution<> dis(0, m_attackers.size() - 1);
+    std::uniform_int_distribution<> dis(0, m_pimpl->m_attackers.size() - 1);
 
     std::size_t idx = dis(gen);
-    auto it = m_attackers.cbegin() + idx;
+    // TODO: Get rid of O(n) iteration complexity. Hashmap does not support
+    // random access iterator.
+    auto it = std::next(m_pimpl->m_attackers.cbegin(), idx);
+    auto name_it = m_pimpl->m_names.find(std::shared_ptr<Attacker>(*it));
 
-    return {it->name, it->ptr};
+    assert(name_it != m_pimpl->m_names.cend());
+
+    return {name_it->second, *it};
 }
 
 std::pair<std::string, std::shared_ptr<Defender>> Scene::get_rnd_defender() const
 {
-    if (m_defenders.empty())
+    if (m_pimpl->m_defenders.empty())
         throw std::runtime_error("List of defenders is empty.");
 
-    std::uniform_int_distribution<> dis(0, m_defenders.size() - 1);
+    std::uniform_int_distribution<> dis(0, m_pimpl->m_defenders.size() - 1);
 
     std::size_t idx = dis(gen);
-    auto it = m_defenders.cbegin() + idx;
 
-    return {it->name, it->ptr};
+    auto it = std::next(m_pimpl->m_defenders.cbegin(), idx);
+    auto name_it = m_pimpl->m_names.find(std::shared_ptr<Defender>(*it));
+
+    assert(name_it != m_pimpl->m_names.cend());
+
+    return {name_it->second, *it};
 }

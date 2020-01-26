@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 
 
 template<class T>
@@ -13,31 +14,34 @@ public:
     explicit Id(const T* id) : m_id(id) {}
     bool operator== (const Id& rhv) const { return m_id == rhv.m_id; }
     bool operator< (const Id& rhv) const { return m_id < rhv.m_id; }
+    std::size_t hash() const { return std::hash<const T*>()(m_id); }
 };
 
 
-class Compariable
+class Comparable
 {
 protected:
-    using IdType = Id<Compariable>;
+    using IdType = Id<Comparable>;
 
 private:
     virtual IdType id() const { return IdType{this}; }
 
 protected:
-    static IdType get_id(const Compariable& obj) { return obj.id(); }
+    static IdType get_id(const Comparable& obj) { return obj.id(); }
 
 public:
-    friend bool is_same(const Compariable& lhv, const Compariable& rhv) { return lhv.id() == rhv.id(); }
-    friend bool is_predecessor(const Compariable& lhv, const Compariable& rhv) { return lhv.id() < rhv.id(); }
+    friend bool is_same(const Comparable& lhv, const Comparable& rhv) { return lhv.id() == rhv.id(); }
+    friend bool is_predecessor(const Comparable& lhv, const Comparable& rhv) { return lhv.id() < rhv.id(); }
+    std::size_t hash() const { return id().hash(); }
 
-    virtual ~Compariable() = 0;
+    virtual ~Comparable() = 0;
 };
 
-inline Compariable::~Compariable() = default;
+
+inline Comparable::~Comparable() = default;
 
 
-class Attacker : virtual public Compariable
+class Attacker : virtual public Comparable
 {
 public:
     virtual std::size_t attack() const = 0;
@@ -45,7 +49,7 @@ public:
 };
 
 
-class Defender : virtual public Compariable
+class Defender : virtual public Comparable
 {
 public:
     virtual bool is_dead() const = 0;
