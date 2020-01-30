@@ -21,6 +21,11 @@ void FreeOutput::visit(Attacker*, Defender*, Applier&) const
     assert(!"Can't reach here!");
 }
 
+void FreeOutput::visit(IRat&) const
+{
+    assert(!"Can't reach here!");
+}
+
 void FreeOutput::visit(Rat& rat) const
 {
     std::cout << "Class: Rat";

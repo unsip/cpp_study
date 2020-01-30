@@ -19,7 +19,7 @@ void Rat::apply(const IBestiaryVisitor& v)
 void ArmoredRat::hit(std::size_t dmg)
 {
     std::size_t admg = dmg < m_armor ? 0 : dmg - m_armor;
-    Rat::hit(admg);
+    m_rat.hit(admg);
 }
 
 void ArmoredRat::apply(const IBestiaryVisitor& v)
@@ -31,7 +31,7 @@ void PlagueRat::hit(std::size_t dmg)
 {
     // TODO: Might need to emit hit before rot stacks.
     m_rot_stack += m_rot;
-    Rat::hit(dmg + m_rot);
+    m_rat.hit(dmg + m_rot);
 }
 
 void PlagueRat::apply(const IBestiaryVisitor& v)

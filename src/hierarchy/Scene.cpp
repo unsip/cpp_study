@@ -32,17 +32,22 @@ public:
 };
 
 
-namespace std {
+namespace std
+{
     template <>
-    struct hash<::data<Attacker>> {
-        size_t operator() (const ::data<Attacker>& d) const noexcept {
+    struct hash<::data<Attacker>>
+    {
+        size_t operator() (const ::data<Attacker>& d) const noexcept
+        {
             return d.m_r.hash();
         }
     };
 
     template <>
-    struct hash<::data<Defender>> {
-        size_t operator() (const ::data<Defender>& d) const noexcept {
+    struct hash<::data<Defender>>
+    {
+        size_t operator() (const ::data<Defender>& d) const noexcept
+        {
             return d.m_r.hash();
         }
     };
@@ -65,7 +70,15 @@ struct Scene::Impl
         }
     };
 
-    std::unordered_map<std::shared_ptr<Comparable>, std::string, std::hash<std::shared_ptr<Comparable>>, Cmp> m_names;
+    struct Hash
+    {
+        size_t operator() (const std::shared_ptr<Comparable>& ptr) const noexcept
+        {
+            return ptr->hash();
+        }
+    };
+
+    std::unordered_map<std::shared_ptr<Comparable>, std::string, Hash, Cmp> m_names;
     std::unordered_set<data<Attacker>> m_attackers;
     std::unordered_set<data<Defender>> m_defenders;
 };
@@ -114,7 +127,13 @@ void Scene::add(const std::string& name, std::shared_ptr<Attacker> aiface, std::
     assert(aiface || diface);
     assert(!(aiface && diface) || is_same(*aiface, *diface));
 
-    auto pr = m_pimpl->m_names.insert(std::pair<std::shared_ptr<Comparable>, std::string>{aiface, name});
+    std::shared_ptr<Comparable> ichoice;
+    if (aiface)
+        ichoice = aiface;
+    else
+        ichoice = diface;
+
+    auto pr = m_pimpl->m_names.insert(std::pair<std::shared_ptr<Comparable>, std::string>{ichoice, name});
     assert(pr.second && "Unique constraint violated! We can't have multiple creatures in the same map.");
 
     if (aiface)

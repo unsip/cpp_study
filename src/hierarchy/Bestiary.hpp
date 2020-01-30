@@ -7,7 +7,14 @@
 #include <cstddef>
 
 
-class Rat : public Attacker, public Defender, public Applier
+class IRat : public Attacker, public Defender, public Applier
+{
+public:
+    virtual std::string squeak() const = 0;
+};
+
+
+class Rat : public IRat
 {
 private:
     std::size_t m_hp;
@@ -24,41 +31,51 @@ public:
     std::size_t get_hp() const override { return m_hp; }
     void hit(std::size_t dmg) override;
     void apply(const IBestiaryVisitor&) override;
+    std::string squeak() const override { return "Squeeeeak!"; }
 };
 
 
-class ArmoredRat : public Rat
+class ArmoredRat : public IRat
 {
 private:
+    Rat m_rat;
     std::size_t m_armor;
 
 public:
     ArmoredRat(std::size_t hp, std::size_t strength, std::size_t armor, const IEventDispatcher& ed)
-        : Rat(hp, strength, ed), m_armor(armor)
+        : m_rat(hp, strength, ed), m_armor(armor)
     {}
 
+    bool is_dead() const override { return m_rat.is_dead(); }
+    std::size_t attack() const override { return m_rat.attack(); }
     std::size_t get_armor() const { return m_armor; }
-    void hit(std::size_t dmg) override;
+    std::size_t get_hp() const override { return m_rat.get_hp(); }
+    std::string squeak() const override { return m_rat.squeak(); }
     void apply(const IBestiaryVisitor&) override;
+    void hit(std::size_t dmg) override;
 };
 
 
-class PlagueRat : public Rat
+class PlagueRat : public IRat
 {
 private:
+    Rat m_rat;
     std::size_t m_rot;
     std::size_t m_rot_stack = 0;
 
 public:
     PlagueRat(std::size_t hp, std::size_t strength, std::size_t rot, const IEventDispatcher& ed)
-        : Rat(hp, strength, ed), m_rot(rot)
+        : m_rat(hp, strength, ed), m_rot(rot)
     {}
 
-    std::size_t attack() const override { return Rat::attack() + m_rot_stack; }
+    bool is_dead() const override { return m_rat.is_dead(); }
+    std::size_t attack() const override { return m_rat.attack() + m_rot_stack; }
+    std::size_t get_hp() const override { return m_rat.get_hp(); }
     std::size_t get_rot() const { return m_rot; }
     std::size_t get_rot_stack() const { return m_rot_stack; }
-    void hit(std::size_t dmg) override;
+    std::string squeak() const override { return m_rat.squeak(); }
     void apply(const IBestiaryVisitor&) override;
+    void hit(std::size_t dmg) override;
 };
 
 

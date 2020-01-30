@@ -7,6 +7,7 @@ class DescriptionOutput : public IBestiaryVisitor
 public:
     void visit(Attacker*, Defender*, Applier&) const override;
 
+    void visit(IRat&) const override;
     void visit(Rat&) const override;
     void visit(ArmoredRat&) const override;
     void visit(PlagueRat&) const override;

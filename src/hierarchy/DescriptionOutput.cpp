@@ -8,6 +8,11 @@ void DescriptionOutput::visit(Attacker*, Defender*, Applier&) const
     assert(!"Can't reach here!");
 }
 
+void DescriptionOutput::visit(IRat&) const
+{
+    assert(!"Can't reach here!");
+}
+
 void DescriptionOutput::visit(Rat&) const
 {
     std::cout << "Simple rat. Nothing special." << std::endl;

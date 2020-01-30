@@ -60,3 +60,21 @@ TEST_F(BestiaryTest, PlagueRatDeathTest)
     EXPECT_EQ(0, r1.get_hp());
     EXPECT_EQ(2, r1.get_rot_stack());
 }
+
+bool kill_rat(IRat& r)
+{
+    r.hit(r.get_hp());
+
+    return r.is_dead();
+}
+
+TEST_F(BestiaryTest, RatsIsDeadTest)
+{
+    PlagueRat r1{10, 1, 1, ed};
+    Rat r2 {12, 4, ed};
+    ArmoredRat r3 {42245, 39, 23, ed};
+
+    EXPECT_TRUE(kill_rat(r1));
+    EXPECT_TRUE(kill_rat(r2));
+    EXPECT_FALSE(kill_rat(r3));
+}

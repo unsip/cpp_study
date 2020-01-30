@@ -7,6 +7,7 @@ class BaseVisitor : public IBestiaryVisitor
 public:
     void visit(Attacker*, Defender*, Applier&) const override;
 
+    void visit(IRat&) const override;
     void visit(Rat&) const override;
     void visit(ArmoredRat& v) const override;
     void visit(PlagueRat& v) const override;

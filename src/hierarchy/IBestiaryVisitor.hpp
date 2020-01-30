@@ -7,6 +7,7 @@ class IBestiaryVisitor
 public:
     virtual void visit(Attacker*, Defender*, Applier&) const = 0;
 
+    virtual void visit(IRat&) const = 0;
     virtual void visit(Rat&) const = 0;
     virtual void visit(ArmoredRat&) const = 0;
     virtual void visit(PlagueRat&) const = 0;
