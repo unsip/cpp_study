@@ -1,9 +1,11 @@
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <tuple>
-#include <cassert>
-#include <utility>
 #include <algorithm>
-#include <iostream>
+#include <utility>
+#include <cassert>
+
 
 using range = std::tuple<int, int>;
 
@@ -20,38 +22,13 @@ bool is_overlap(range lhv, range rhv)
     return !(get<1>(r) < get<0>(r));
 }
 
-template <typename Iter>
-void iter_swap(Iter lhv, Iter rhv)
-{
-    if (lhv != rhv)
-        std::swap(*lhv, *rhv);
-}
-
-template <typename Iter, typename Cmp>
-Iter remove_if(Iter first, Iter last, Cmp cmp)
-{
-    auto it = first;
-
-    while (it != last)
-    {
-        if (!cmp(*it))
-        {
-            iter_swap(it, first);
-            ++first;
-        }
-        ++it;
-    }
-
-    return first;
-}
-
 /*
  * Возвращает все пересечения lhv с отрезками в intervals.
  */
 std::vector<range> get_overlaps(range lhv, std::vector<range> intervals)
 {
     auto cmp = [lhv] (range value) { return !is_overlap(lhv, value); };
-    auto it = ::remove_if(intervals.begin(), intervals.end(), cmp);
+    auto it = std::remove_if(intervals.begin(), intervals.end(), cmp);
     intervals.erase(it, intervals.end());
     return intervals;
 }
@@ -59,10 +36,10 @@ std::vector<range> get_overlaps(range lhv, std::vector<range> intervals)
 /*
  * Проверяет существуют ли пересечения у lhv с каким-либо отрезком в intervals.
  */
-bool is_overlap(range lhv, std::vector<range> rhv)
+bool is_overlap(range lhv, const std::vector<range>& rhv)
 {
     auto cmp = [lhv] (range curr) { return is_overlap(lhv, curr); };
-    return std::find_if(rhv.begin(), rhv.end(), cmp) != rhv.end();
+    return std::find_if(rhv.cbegin(), rhv.cend(), cmp) != rhv.cend();
 }
 
 /*
@@ -70,33 +47,38 @@ bool is_overlap(range lhv, std::vector<range> rhv)
  */
 bool is_double_overlap(range lhv, std::vector<range> rhv)
 {
-    auto overlaps = get_overlaps(lhv, rhv);
-    for (std::size_t i = 0; i < overlaps.size(); ++i)
+    auto overlaps = get_overlaps(lhv, std::move(rhv));
+    for (auto it = overlaps.cbegin(), last = overlaps.cend(); it != last; ++it)
     {
-        auto vec {overlaps};
-        vec.erase(std::next(vec.begin(), i));
-        if (is_overlap(overlaps[i], vec))
+        std::vector<range> vec;
+        // copy all elements exept current one
+        vec.reserve(overlaps.size() - 1);
+        vec.insert(vec.cend(), overlaps.cbegin(), it);
+        vec.insert(vec.cend(), std::next(it), overlaps.cend());
+
+        if (is_overlap(*it, vec))
             return true;
     }
 
     return false;
 }
 
-int interval_selection(std::vector<range> intervals)
+int interval_selection(const std::vector<range>& intervals)
 {
     if (intervals.size() < 3)
         return intervals.size();
 
-    if (intervals.size() == 3)
-        return is_overlap(get_overlap(intervals[0], intervals[1]), intervals[2]) ? 2 : 3;
-
     int result = 0;
-    for (std::size_t i = 0; i < intervals.size(); ++i)
+    for (auto it = intervals.cbegin(), last = intervals.cend(); it != last; ++it)
     {
-        auto vec {intervals};
-        vec.erase(std::next(vec.begin(), i));
+        std::vector<range> vec;
+        // copy all elements exept current one
+        vec.reserve(intervals.size() - 1);
+        vec.insert(vec.cend(), intervals.cbegin(), it);
+        vec.insert(vec.cend(), std::next(it), intervals.cend());
+
         int low_pow = interval_selection(vec);
-        if (!is_double_overlap(intervals[i], vec))
+        if (!is_double_overlap(*it, std::move(vec)))
             low_pow += 1;
 
         result = std::max(result, low_pow);
@@ -105,6 +87,44 @@ int interval_selection(std::vector<range> intervals)
     assert(1 < result);
     return result;
 }
+
+#if 0
+int main()
+{
+    using namespace std;
+    ofstream fout(getenv("OUTPUT_PATH"));
+
+    int s;
+    cin >> s;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    for (int s_itr = 0; s_itr < s; s_itr++)
+    {
+        int n;
+        cin >> n;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        vector<range> intervals;
+        intervals.reserve(n);
+        for (int intervals_row_itr = 0; intervals_row_itr < n; intervals_row_itr++)
+        {
+            range rng;
+            cin >> get<0>(rng);
+            cin >> get<1>(rng);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            intervals.emplace_back(rng);
+        }
+
+        int result = interval_selection(intervals);
+
+        fout << result << "\n";
+    }
+
+    fout.close();
+
+    return 0;
+}
+#endif
 
 int main()
 {
@@ -141,7 +161,6 @@ int main()
     }
     {
     std::vector<std::tuple<int, int>> input {{1, 10}, {1, 3}, {4, 6}, {7, 10}};
-    std::cout << interval_selection(input) << std::endl;
     assert(4 == interval_selection(input));
     }
     {
