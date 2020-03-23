@@ -143,28 +143,74 @@ int main()
     assert((range{2, 2} == get_overlap({1, 2}, {2, 3})));
     assert((range{2, 2} == get_overlap({2, 3}, {1, 2})));
     }
-    {
-    std::vector<std::tuple<int, int>> input {};
-    assert(0 == interval_selection(input));
-    }
-    {
-    std::vector<std::tuple<int, int>> input {{1, 2}};
-    assert(1 == interval_selection(input));
-    }
-    {
-    std::vector<std::tuple<int, int>> input {{1, 2}, {2, 3}, {2, 4}};
-    assert(2 == interval_selection(input));
-    }
-    {
-    std::vector<std::tuple<int, int>> input {{1, 5}, {1, 5}, {1, 5}};
-    assert(2 == interval_selection(input));
-    }
-    {
-    std::vector<std::tuple<int, int>> input {{1, 10}, {1, 3}, {4, 6}, {7, 10}};
-    assert(4 == interval_selection(input));
-    }
-    {
-    std::vector<std::tuple<int, int>> input {{1, 10}, {1, 3}, {3, 6}, {7, 10}};
-    assert(3 == interval_selection(input));
-    }
+
+    assert(0 == interval_selection({}));
+    assert(1 == interval_selection({{1, 2}}));
+
+    assert(2 == interval_selection({{1, 2}, {1, 2}}));
+    assert(2 == interval_selection({{1, 2}, {2, 4}}));
+    assert(2 == interval_selection({{2, 4}, {1, 2}}));
+    assert(2 == interval_selection({{1, 3}, {4, 6}}));
+    assert(2 == interval_selection({{4, 6}, {1, 3}}));
+
+    assert(2 == interval_selection({{1, 2}, {2, 3}, {2, 4}}));
+    assert(2 == interval_selection({{1, 2}, {2, 4}, {2, 3}}));
+    assert(2 == interval_selection({{2, 3}, {1, 2}, {2, 4}}));
+    assert(2 == interval_selection({{2, 3}, {2, 4}, {1, 2}}));
+    assert(2 == interval_selection({{2, 4}, {1, 2}, {2, 3}}));
+    assert(2 == interval_selection({{2, 4}, {2, 3}, {1, 2}}));
+
+    assert(2 == interval_selection({{1, 5}, {1, 5}, {1, 5}}));
+
+    assert(3 == interval_selection({{1, 3}, {4, 5}, {6, 7}}));
+    assert(3 == interval_selection({{1, 3}, {6, 7}, {4, 5}}));
+    assert(3 == interval_selection({{4, 5}, {1, 3}, {6, 7}}));
+    assert(3 == interval_selection({{4, 5}, {6, 7}, {1, 3}}));
+    assert(3 == interval_selection({{6, 7}, {1, 3}, {4, 5}}));
+    assert(3 == interval_selection({{6, 7}, {4, 5}, {1, 3}}));
+
+    assert(4 == interval_selection({{1, 10}, {1, 3}, {4, 6}, {7, 10}}));
+    assert(3 == interval_selection({{1, 10}, {1, 3}, {3, 6}, {7, 10}}));
+
+    assert(4 == interval_selection({{1, 2}, {2, 3}, {3, 4}, {4, 5}}));
+    assert(2 == interval_selection({{1,10}, {2, 9}, {3, 8}, {4, 7}}));
+    assert(2 == interval_selection({{1,10}, {2,11}, {3,12}, {4,14}}));
+    assert(3 == interval_selection({{1, 5}, {3, 5}, {3, 3}, {4, 4}}));
+
+    assert(5 == interval_selection({{1,1}, {2,2}, {3,3}, {4,4}, {5, 5}}));
+    assert(6 == interval_selection({{1,1}, {2,2}, {3,3}, {4,4}, {5, 5}, {1, 5}}));
+
+    // 1234567890
+    // ----------
+    // ------
+    //    ------
+    // ---
+    //        --
+    // -       -
+    //  -     -
+    assert(6 == interval_selection({{1,10}, {1, 6}, {4,10}, {1, 3}, {8,10}, {1, 1}, {2, 2}, {9, 9}, {10,10}}));
+
+    // 1234567890123456789
+    // ----------- --  ---
+    // ----------  ---- -- 
+    //         ----------
+    assert(6 == interval_selection({{1,11}, {1,10}, {9,18}, {13,14}, {17,19}, {13,16}, {18,19}}));
+
+    // 1234567890123456789
+    // ------------
+    // --------
+    //        -----
+    //         -
+    //           --
+    assert(4 == interval_selection({{1,12}, {1, 8}, {8,12}, {9, 9}, {1, 2}}));
+
+    // 1234567890
+    // -------
+    // -
+    //  -
+    //   -
+    //    -
+    //     -
+    //   --------
+    assert(6 == interval_selection({{1,1}, {2,2}, {3,3}, {4,4}, {5, 5}, {1, 7}, {3, 10}}));
 }
