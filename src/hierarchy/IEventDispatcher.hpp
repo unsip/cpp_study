@@ -4,6 +4,7 @@
 #include "IBestiary.hpp"
 
 #include <functional>
+#include <string>
 
 
 class IEventDispatcher
