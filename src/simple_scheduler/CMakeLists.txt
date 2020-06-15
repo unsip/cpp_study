@@ -1,3 +1,5 @@
+find_package(Threads REQUIRED)
+
 add_library(
     tcp_socket
     TcpSocket.cpp
@@ -13,6 +15,7 @@ target_link_libraries(
     tcp_srv
     PRIVATE
         tcp_socket
+        Threads::Threads
     )
 
 add_executable(

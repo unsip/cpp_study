@@ -9,10 +9,9 @@ int main()
 
     char buf[10];
 
-    while (true)
+    while (auto p_sz = sock.receive(buf, std::size(buf)))
     {
-        auto p_sz = sock.receive(buf, std::size(buf));
-
+        std::cout << "SZ: " << p_sz << std::endl;
         std::replace(std::begin(buf), std::next(std::begin(buf), p_sz), '\0', '\n');
 
         std::cout.write(buf, p_sz);
