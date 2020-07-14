@@ -1,8 +1,11 @@
 #include <iostream>
+#include <iterator>
+#include <algorithm>
 #include <vector>
+#include <cassert>
 
-template <typename It, typename Comparator>
-void merge(It lhbegin, It lhend, It rhbegin, It rhend, FwdIt output, Comparator cmp)
+template <typename It, typename OutputIt, typename Comparator>
+void merge(It lhbegin, It lhend, It rhbegin, It rhend, OutputIt output, Comparator cmp)
 {
     while (lhbegin != lhend && rhbegin != rhend)
     {
@@ -25,31 +28,41 @@ void merge(It lhbegin, It lhend, It rhbegin, It rhend, FwdIt output, Comparator 
         *output++ = *rhbegin++;
 }
 
-template <typename It, typename FwdIt, typename Comparator>
-FwdIt merge_sort(It begin, It end, FwdIt fbegin, Comparator cmp)
+template <typename It, typename Comparator>
+It mr_impl(It begin, typename std::iterator_traits<It>::difference_type sz, Comparator cmp)
 {
-    assert(std::distance(begin, end) <= std::distance(fbegin, fend) && "Not enought output memory!");
-    if (begin != end || std::next(begin) != end)
+    if (1 < sz)
     {
-        auto sz = std::distance(begin, end);
-        It mid = std::next(begin, sz / 2);
-        FwdIt fmid = merge_sort(begin, mid, fbegin, cmp);
-        fend = merge_sort(mid, end, fmid, cmp);
-        merge(fbegin, fmid, fmid, fend, fbegin, cmp);
+        It mid = mr_impl(begin, sz / 2, cmp);
+        It end = mr_impl(mid, sz - sz / 2, cmp);
+
+        std::vector<typename std::iterator_traits<It>::value_type> tmp;
+        tmp.reserve(sz);
+        merge(begin, mid, mid, end, std::back_insert_iterator<decltype(tmp)>(tmp), cmp);
+        std::copy(tmp.begin(), tmp.end(), begin);
+
+        return end;
     }
 
-    return fend;
+    return std::next(begin, sz);
+}
+
+template <typename It, typename Comparator>
+void merge_sort(It begin, It end, Comparator cmp)
+{
+    if (begin != end && std::next(begin) != end)
+        mr_impl(begin, std::distance(begin, end), cmp);
 }
 
 int main()
 {
+    auto cmp = [](auto lhv, auto rhv){ return lhv < rhv; };
     {
-    merge_sort(nullptr, 0);
+    std::vector<int> arr;
+    merge_sort(arr.begin(), arr.end(), cmp);
     }
     {
     std::vector<int> arr = {1};
-    std::vector<int> res_arr;
-    res_arr.reserve(arr.size());
     merge_sort(arr.begin(), arr.end(), cmp);
     std::copy(arr.begin(), arr.end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << std::endl;
@@ -64,7 +77,7 @@ int main()
     }
     {
     std::vector<int> arr = {1, 1, 1, 1, 1};
-    merge_sort(arr.begin(), arr.end());
+    merge_sort(arr.begin(), arr.end(), cmp);
     std::copy(arr.begin(), arr.end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << std::endl;
     assert((arr == std::vector<int> {{1, 1, 1, 1, 1}}));
