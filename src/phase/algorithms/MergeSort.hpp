@@ -1,10 +1,9 @@
-#include "Algorithms.hpp"
-
 #include <iterator>
 
-namespace {
+namespace phase::algorithms {
+namespace detail {
 template <typename It, typename FwdIt, typename Comparator>
-void merge(It lhbegin, It lhend, It rhbegin, It rhend, FwdIt output, Comparator cmp)
+inline void merge(It lhbegin, It lhend, It rhbegin, It rhend, FwdIt output, Comparator cmp)
 {
     while (lhbegin != lhend && rhbegin != rhend)
     {
@@ -26,26 +25,28 @@ void merge(It lhbegin, It lhend, It rhbegin, It rhend, FwdIt output, Comparator 
     while (rhbegin != rhend)
         *output++ = *rhbegin++;
 }
-}
+} // phase::algorithms::detail
 
 template <typename It, typename FwdIt, typename Comparator>
-FwdIt phase::algorithms::merge_sort(It begin, It end, FwdIt fbegin, FwdIt fend, Comparator cmp)
+inline FwdIt merge_sort(It begin, It end, FwdIt fbegin, FwdIt fend, Comparator cmp)
 {
-    if (1 < sz)
+    assert(std::distance(begin, end) <= std::distance(fbegin, fend) && "Not enought output memory!");
+    if (begin != end || std::next(begin) != end)
     {
         auto sz = std::distance(begin, end);
         It mid = std::next(begin, sz / 2);
-        FwdIt fmid = phase::algorithms::merge_sort(begin, mid, fbegin, cmp);
-        fend = phase::algorithms::merge_sort(mid, end, fmid, cmp);
-        ::merge(fbegin, fmid, fmid, fend, fbegin, cmp);
+        FwdIt fmid = merge_sort(begin, mid, fbegin, cmp);
+        fend = merge_sort(mid, end, fmid, cmp);
+        detail::merge(fbegin, fmid, fmid, fend, fbegin, cmp);
     }
 
-    return std::next(begin, sz);
+    return fend;
 }
 
 template <typename It, typename Comparator>
-void merge_sort(It begin, It end, Comparator cmp)
+inline void merge_sort(It begin, It end, Comparator cmp)
 {
     if (begin != end && std::next(begin) != end)
         mr_impl(begin, std::distance(begin, end), cmp);
 }
+} // phase, algorithms

@@ -1,9 +1,0 @@
-add_library(
-    phase
-    Algorithms.hpp
-    HeapSort.cpp
-    MergeSort.cpp
-    QuickSort.cpp
-    Iterators.hpp
-    Utils.hpp
-)
