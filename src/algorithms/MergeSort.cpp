@@ -31,8 +31,7 @@ void merge(It lhbegin, It lhend, It rhbegin, It rhend, FwdIt output, Comparator 
 template <typename It, typename FwdIt, typename Comparator>
 FwdIt phase::algorithms::merge_sort(It begin, It end, FwdIt fbegin, FwdIt fend, Comparator cmp)
 {
-    assert(std::distance(begin, end) <= std::distance(fbegin, fend) && "Not enought output memory!");
-    if (begin != end || std::next(begin) != end)
+    if (1 < sz)
     {
         auto sz = std::distance(begin, end);
         It mid = std::next(begin, sz / 2);
@@ -41,5 +40,12 @@ FwdIt phase::algorithms::merge_sort(It begin, It end, FwdIt fbegin, FwdIt fend, 
         ::merge(fbegin, fmid, fmid, fend, fbegin, cmp);
     }
 
-    return fend;
+    return std::next(begin, sz);
+}
+
+template <typename It, typename Comparator>
+void merge_sort(It begin, It end, Comparator cmp)
+{
+    if (begin != end && std::next(begin) != end)
+        mr_impl(begin, std::distance(begin, end), cmp);
 }
