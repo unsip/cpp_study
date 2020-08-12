@@ -25,28 +25,35 @@ inline void merge(It lhbegin, It lhend, It rhbegin, It rhend, FwdIt output, Comp
     while (rhbegin != rhend)
         *output++ = *rhbegin++;
 }
-} // phase::algorithms::detail
-
-template <typename It, typename FwdIt, typename Comparator>
-inline FwdIt merge_sort(It begin, It end, FwdIt fbegin, FwdIt fend, Comparator cmp)
-{
-    assert(std::distance(begin, end) <= std::distance(fbegin, fend) && "Not enought output memory!");
-    if (begin != end || std::next(begin) != end)
-    {
-        auto sz = std::distance(begin, end);
-        It mid = std::next(begin, sz / 2);
-        FwdIt fmid = merge_sort(begin, mid, fbegin, cmp);
-        fend = merge_sort(mid, end, fmid, cmp);
-        detail::merge(fbegin, fmid, fmid, fend, fbegin, cmp);
-    }
-
-    return fend;
-}
 
 template <typename It, typename Comparator>
-inline void merge_sort(It begin, It end, Comparator cmp)
+It mr_impl(It begin, typename std::iterator_traits<It>::difference_type sz, Comparator cmp)
+{
+    if (1 < sz)
+    {
+        It mid = mr_impl(begin, sz / 2, cmp);
+        It end = mr_impl(mid, sz - sz / 2, cmp);
+
+        std::vector<typename std::iterator_traits<It>::value_type> tmp;
+        tmp.reserve(sz);
+        merge(begin, mid, mid, end, std::back_insert_iterator<decltype(tmp)>(tmp), cmp);
+        std::copy(tmp.begin(), tmp.end(), begin);
+
+        return end;
+    }
+
+    return std::next(begin, sz);
+}
+} // phase::algorithms::detail
+
+template <
+    typename It
+  , typename Comparator = std::less<typename std::iterator_traits<It>::value_type>
+>
+inline void merge_sort(It begin, It end, Comparator cmp = Comparator())
 {
     if (begin != end && std::next(begin) != end)
-        mr_impl(begin, std::distance(begin, end), cmp);
+        detail::mr_impl(begin, std::distance(begin, end), cmp);
 }
 } // phase, algorithms
+

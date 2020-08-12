@@ -9,7 +9,7 @@ template <typename It>
 class EndingPolicy
 {
 public:
-    It operator ()(It begin, It end) const { return --end; }
+    It operator ()(It, It end) const { return --end; }
 };
 
 
@@ -36,3 +36,4 @@ It find_if(It begin, It end, Pred pred)
     return begin;
 }
 }
+

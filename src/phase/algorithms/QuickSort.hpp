@@ -33,15 +33,16 @@ template <
     , typename Comparator = std::less<typename std::iterator_traits<BiIt>::value_type>
     , typename Policy = utils::EndingPolicy<BiIt>
 >
-inline void quick_sort(BiIt begin, BiIt end, Comparator cmp, Policy p)
+inline void quick_sort(BiIt begin, BiIt end, Comparator cmp = Comparator(), Policy p = Policy())
 {
     static_assert(std::is_same<decltype(p({}, {})), BiIt>::value, "Bad base iterator!");
     if (begin != end)
     {
         BiIt base = p(begin, end);
-        auto bisect = partial_sort(begin, end, base, cmp);
+        auto bisect = phase::algorithms::partial_sort(begin, end, base, cmp);
         quick_sort(begin, bisect, cmp);
         quick_sort(++bisect, end, cmp);
     }
 }
 } // namespace phase, algorithms
+
