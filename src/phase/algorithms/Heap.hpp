@@ -27,7 +27,7 @@ template <typename RAIt, typename Comparator>
 inline void build_heap(RAIt first, RAIt last, Comparator cmp)
 {
     for (auto r_it = std::make_reverse_iterator(last), r_end = std::make_reverse_iterator(first); r_it != r_end ; ++r_it)
-        heapify_up(first, std::distance(first, r_it.base()),  cmp);
+        heapify_up(first, std::distance(first, r_it.base()) - 1,  cmp);
 }
 
 template <typename RAIt, typename Comparator>

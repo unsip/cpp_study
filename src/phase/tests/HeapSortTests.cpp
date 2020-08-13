@@ -34,13 +34,13 @@ TEST_F(HeapSortTests, TwoElemsTest)
     EXPECT_EQ(arr, res);
 }
 
-//TEST_F(HeapSortTests, ThreeElemsTest)
-//{
-//    std::vector<double> arr = {9, 6, 1};
-//    std::vector<double> res = {1, 6, 9};
-//    phase::algorithms::heapsort(arr.begin(), arr.end());
-//    EXPECT_EQ(arr, res);
-//}
+TEST_F(HeapSortTests, ThreeElemsTest)
+{
+    std::vector<double> arr = {9, 6, 1};
+    std::vector<double> res = {1, 6, 9};
+    phase::algorithms::heapsort(arr.begin(), arr.end());
+    EXPECT_EQ(arr, res);
+}
 
 TEST_F(HeapSortTests, EqualElemsTest)
 {
