@@ -88,7 +88,7 @@ TCPSocket::TCPSocket()
             case ENOMEM:
             case ENOBUFS:
             {
-                close(m_fd);
+                ::close(m_fd);
                 throw std::runtime_error(err2str(errno));
             }
         }
@@ -98,12 +98,7 @@ TCPSocket::TCPSocket()
 
 TCPSocket::~TCPSocket()
 {
-    // Prevent closing moved socket.
-    if (-1 != m_fd)
-    {
-        int res = close(m_fd);
-        assert(res != -1 && "Can't reach here!");
-    }
+    close();
 }
 
 
@@ -254,4 +249,14 @@ TCPSocket TCPSocket::accept()
     }
 
     return TCPSocket(rc);
+}
+
+void TCPSocket::close() noexcept
+{
+    // Prevent closing moved socket.
+    if (-1 != m_fd)
+    {
+        int res = ::close(m_fd);
+        assert(res != -1 && "Can't reach here!");
+    }
 }

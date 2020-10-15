@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <chrono>
 
 class TCPSocket
 {
@@ -41,6 +42,7 @@ public:
     void listen();
     std::size_t receive(char* buf, std::size_t len);
     void send(const char* buf, std::size_t len);
+    void close() noexcept;
 
     TCPSocket accept();
 };
