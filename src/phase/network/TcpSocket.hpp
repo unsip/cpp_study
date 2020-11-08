@@ -5,7 +5,7 @@
 #include <chrono>
 #include <exception>
 
-// TODO: Separate namespace.
+namespace phase::network {
 class SocketClosedError : public std::exception
 {
     const std::string m_what_msg;
@@ -45,8 +45,7 @@ public:
     {
         m_fd = rhv.m_fd;
         rhv.m_fd = -1;
-        return *this;
-    }
+        return *this; }
 
     ~TCPSocket();
 
@@ -59,3 +58,4 @@ public:
 
     TCPSocket accept();
 };
+} // namespace phase::network

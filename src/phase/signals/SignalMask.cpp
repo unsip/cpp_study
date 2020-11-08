@@ -4,9 +4,11 @@
 #include <cassert>
 #include <signal.h>
 
+namespace {
 constexpr int sig_mapping[] = { SIGINT, SIGTERM };
+}
 
-
+namespace phase::signals {
 struct SignalMask::Impl
 {
     sigset_t mask = {0};
@@ -22,7 +24,7 @@ SignalMask::SignalMask(std::initializer_list<Sig::Sig> signals)
     {
         auto idx = static_cast<std::underlying_type<Sig::Sig>::type>(s);
         // TODO: Throw ImplError on -1.
-        int err = sigaddset(&m_impl->mask, sig_mapping[idx]);
+        int err = sigaddset(&m_impl->mask, ::sig_mapping[idx]);
         assert(err == 0 && "Invalid signum!");
         (void)err;
     }
@@ -62,3 +64,4 @@ void SignalMask::unlock() noexcept
     assert(err == 0 && "Invalid arguments for sigmask!");
     (void)err;
 }
+} // namespace phase::signals

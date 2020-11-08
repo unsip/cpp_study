@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 
+namespace phase::threading {
 template <typename Key, typename Value>
 class TSQueue
 {
@@ -147,4 +148,4 @@ public:
         return QueueFacet {m_impl};
     }
 };
-
+} // namespace phase::threading

@@ -14,7 +14,6 @@
 /**
  * Utility object for representing system locale and converting any given
  * system error to C-string.
- *
  * @todo: Move to Utils library.
  */
 class Locale
@@ -60,6 +59,7 @@ const char* err2str(int errnum)
     return loc.err2str(errnum);
 }
 
+namespace phase::network {
 // @todo: Wrap socket initialization with external object in order to ease
 // error handling in constructor.
 TCPSocket::TCPSocket()
@@ -261,3 +261,4 @@ void TCPSocket::close() noexcept
         assert(res != -1 && "Can't reach here!");
     }
 }
+} // namespace phase::network

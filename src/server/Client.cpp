@@ -1,10 +1,11 @@
 #include "TcpSocket.hpp"
+
 #include <iostream>
 #include <algorithm>
 
 int main()
 {
-    TCPSocket sock;
+    phase::network::TCPSocket sock;
     sock.connect("127.0.0.1", 9999);
 
     char buf[10];

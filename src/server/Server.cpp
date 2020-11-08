@@ -1,6 +1,6 @@
 #include "TcpSocket.hpp"
-#include "utils/TSQueue.hpp"
-#include "utils/SignalMask.hpp"
+#include "TSQueue.hpp"
+#include "SignalMask.hpp"
 
 #include <csignal>
 #include <chrono>
@@ -22,10 +22,10 @@ static_assert(ATOMIC_BOOL_LOCK_FREE, "Could not guarantee safe signal handling!"
 class ConnectionManager
 {
 private:
-    std::optional<TCPSocket> m_acceptor;
+    std::optional<phase::network::TCPSocket> m_acceptor;
     std::mutex m_mut;
     // Note: List iterators (captured by Connection objects) won't be invalidated upon modification.
-    std::list<TCPSocket> m_connections;
+    std::list<phase::network::TCPSocket> m_connections;
     ConnectionManager() = default;
 
 public:
@@ -35,9 +35,9 @@ public:
     class Connection
     {
     private:
-        std::optional<std::list<TCPSocket>::iterator> m_sock_it;
+        std::optional<std::list<phase::network::TCPSocket>::iterator> m_sock_it;
     public:
-        Connection(std::list<TCPSocket>::iterator it)
+        Connection(std::list<phase::network::TCPSocket>::iterator it)
             : m_sock_it{it}
         {}
 
@@ -129,11 +129,10 @@ void sig_handler(int)
 }
 
 // TODO: Create ThreadPool abstraction to manage finished threads.
-// TODO: Move this_thread from workers to finished (using iterator, see TSQueue.hpp).
 void spam_timestamp(
         ConnectionManager::Connection conn
-      , TSQueue<std::thread::id, std::thread>& workers
-      , TSQueue<std::thread::id, std::thread>& finished)
+      , phase::threading::TSQueue<std::thread::id, std::thread>& workers
+      , phase::threading::TSQueue<std::thread::id, std::thread>& finished)
 {
     for (unsigned i = 0; i < 5; ++i)
     {
@@ -163,6 +162,9 @@ void spam_timestamp(
 
 int main()
 {
+    using namespace phase::signals;
+    using namespace phase::threading;
+
     ConnectionManager::instance().start("127.0.0.1", 9999);
     TSQueue<std::thread::id, std::thread> workers;
     TSQueue<std::thread::id, std::thread> finished;
@@ -182,10 +184,8 @@ int main()
                 std::thread t {&spam_timestamp, std::move(conn), std::ref(workers), std::ref(finished)};
                 workers.lock().emplace(t.get_id(), std::move(t));
             }
-            catch (const SocketClosedError& ex)
-            {
-                std::cout << ex.what() << std::endl;
-            }
+            catch (const phase::network::SocketClosedError& ex)
+            {}
         }
     };
 

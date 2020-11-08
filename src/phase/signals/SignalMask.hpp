@@ -2,6 +2,7 @@
 
 #include <memory>
 
+namespace phase::signals {
 namespace Sig {
 // TODO: Extend signal set.
 // Note: Should be the same order as sig_mapping (see cpp).
@@ -14,11 +15,11 @@ enum Sig
 namespace detail {
 struct AllSignalsTag {};
 struct NoSignalsTag {};
-} // namespace Sig::detail
+} // namespace phase::signals::Sig::detail
 
 constexpr detail::AllSignalsTag all;
 constexpr detail::NoSignalsTag none;
-} // namespace Sig
+} // namespace phase::signals::Sig
 
 class SignalMask
 {
@@ -39,4 +40,4 @@ public:
     void lock() noexcept;
     void unlock() noexcept;
 };
-
+} // namespace phase::signals
