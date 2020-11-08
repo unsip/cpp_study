@@ -4,7 +4,7 @@
 #include <random>
 
 // TODO: Implement std::swap, std::distance, std::next
-namespace phase::utils {
+namespace phase::algorithms::utils {
 template <typename It>
 class EndingPolicy
 {
@@ -35,5 +35,5 @@ It find_if(It begin, It end, Pred pred)
     while (begin != end && !pred(*begin)) ++begin;
     return begin;
 }
-}
+} // namespace phase::algorithms::utils
 
