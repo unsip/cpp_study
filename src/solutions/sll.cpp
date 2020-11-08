@@ -1,7 +1,7 @@
 /*
  *  Singly-linked list implementation.
  */
-#include "single_linked_lst.hpp"
+#include "sll.hpp"
 #include <cassert>
 #include <iostream>
 
@@ -180,8 +180,6 @@ void SingleLinkedList::push_back(const SingleLinkedList::Payload& data)
 
     ++m_lst_size;
 }
-
-//void SingleLinkedList::insert_after();
 
 void SingleLinkedList::erase_after(SingleLinkedList::ConstIter elem)
 {

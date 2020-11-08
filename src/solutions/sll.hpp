@@ -4,9 +4,8 @@
 #include <cassert>
 #include <string>
 
-namespace borealis
-{
-
+namespace borealis {
+// TODO: Generalize and move to phase library.
 class SingleLinkedList
 {
 public:
