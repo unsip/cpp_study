@@ -1,4 +1,4 @@
 add_subdirectory(hierarchy)
-add_subdirectory(simple_scheduler)
+add_subdirectory(server)
 add_subdirectory(intervals)
 add_subdirectory(phase)
