@@ -3,6 +3,19 @@
 #include <string>
 #include <cstdint>
 #include <chrono>
+#include <exception>
+
+// TODO: Separate namespace.
+class SocketClosedError : public std::exception
+{
+    const std::string m_what_msg;
+public:
+    SocketClosedError(const std::string& what_msg)
+        : m_what_msg(what_msg)
+    {}
+    const char* what() const noexcept override { return m_what_msg.c_str(); }
+};
+
 
 class TCPSocket
 {

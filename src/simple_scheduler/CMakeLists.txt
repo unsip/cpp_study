@@ -1,9 +1,17 @@
 find_package(Threads REQUIRED)
 
+# TODO: Add doxygen.
 add_library(
     tcp_socket
     TcpSocket.cpp
     TcpSocket.hpp
+    utils/SignalMask.cpp
+    )
+
+target_compile_options(
+    tcp_socket
+    INTERFACE
+        "-pthread"
     )
 
 add_executable(

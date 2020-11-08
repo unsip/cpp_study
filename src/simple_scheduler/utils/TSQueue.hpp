@@ -5,11 +5,57 @@
 #include <condition_variable>
 #include <mutex>
 #include <memory>
-#include <queue>
+#include <unordered_map>
 
+//class Dummy
+//{
+//private:
+//    struct Impl
+//    {
+//        Impl(const Smth& a, const Foo& b, const Bar& c, const Boi& d)
+//            :   m_smth(a),
+//                m_foo(b),
+//                m_bar(c),
+//                m_boi(d)
+//        {}
+//
+//        Smth m_smth;
+//        Foo m_foo;
+//        Bar m_bar;
+//        Boi m_boi;
+//    };
+//
+//    Impl* m_impl;
+//public:
+//    Dummy(const Smth& a, const Foo& b, const Bar& c, const Boi& d)
+//        : m_impl(new Impl(a, b, c, d))
+//    {}
+//    Dummy(const Dummy& rhv)
+//    {
+//        *m_impl = *rhv.m_impl;
+//    }
+//
+//    ~Dummy()
+//    {
+//        delete m_impl;
+//    }
+//
+//    Dummy& operator =(const Dummy& rhv)
+//    {
+//        Dummy tmp {rhv};
+//        this->swap(tmp);
+//        return *this;
+//    };
+//
+//    void swap(Dummy& rhv) noexcept
+//    {
+//        std::swap(rhv.m_impl, m_impl);
+//    };
+//
+//};
 
 // TODO: Implement TSQueue::iterator.
-template <typename T>
+template <typename Key, typename Value>
 class TSQueue
 {
 private:
@@ -17,11 +63,16 @@ private:
     {
         std::mutex m_mut;
         std::condition_variable_any m_cond;
-        std::queue<T> m_threads;
+        std::unordered_map<Key, Value> m_threads;
     };
     std::shared_ptr<Impl> m_impl;
+    using ContainerType = decltype(Impl::m_threads);
 
 public:
+    using TSQueueIt = typename ContainerType::iterator;
+    using ConstTSQueueIt = typename ContainerType::const_iterator;
+    using ValueType = typename ContainerType::value_type;
+
     class QueueFacet
     {
     private:
@@ -53,6 +104,26 @@ public:
         QueueFacet(QueueFacet&& q) = default;
         QueueFacet& operator= (QueueFacet&&) = default;
 
+        TSQueueIt begin()
+        {
+            return m_impl->m_threads.begin();
+        }
+
+        TSQueueIt end()
+        {
+            return m_impl->m_threads.end();
+        }
+
+        ConstTSQueueIt cbegin() const
+        {
+            return m_impl->m_threads.cbegin();
+        }
+
+        ConstTSQueueIt cend() const
+        {
+            return m_impl->m_threads.cend();
+        }
+
         void wait()
         {
             m_impl->m_cond.wait(m_impl->m_mut);
@@ -70,19 +141,25 @@ public:
             return m_impl->m_cond.wait_for(m_impl->m_mut, dur, pred);
         }
 
-        void push(T t)
+        template <typename... Args>
+        auto emplace(Args&&... args) -> decltype(auto)
         {
-            m_impl->m_threads.push(std::move(t));
+            return m_impl->m_threads.emplace(std::forward<Args>(args)...);
         }
 
-        void pop()
+        auto erase(ConstTSQueueIt it) -> decltype(auto)
         {
-            m_impl->m_threads.pop();
+            m_impl->m_threads.erase(it);
         }
 
-        auto front() -> decltype(auto)
+        TSQueueIt find(const Key& key)
         {
-            return m_impl->m_threads.front();
+            return m_impl->m_threads.find(key);
+        }
+
+        ConstTSQueueIt find(const Key& key) const
+        {
+            return m_impl->m_threads.find(key);
         }
 
         auto size() const -> decltype(auto)
@@ -95,11 +172,10 @@ public:
             return m_impl->m_threads.empty();
         }
 
-        void swap(std::queue<T>& q)
+        void swap(std::unordered_map<Key, Value>& q) noexcept
         {
             m_impl->m_threads.swap(q);
         }
-
     };
 
     TSQueue()

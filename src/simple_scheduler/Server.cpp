@@ -1,16 +1,17 @@
 #include "TcpSocket.hpp"
 #include "utils/TSQueue.hpp"
+#include "utils/SignalMask.hpp"
 
+#include <csignal>
 #include <chrono>
 #include <ctime>
 #include <sstream>
 #include <unordered_map>
-#include <queue>
+#include <deque>
 #include <list>
 #include <thread>
 #include <mutex>
 #include <iostream>
-#include <csignal>
 #include <atomic>
 #include <cassert>
 
@@ -59,10 +60,17 @@ public:
             return *this;
         }
 
-        // TODO: Implement receive.
         void send(const char* buf, std::size_t len)
         {
             (*m_sock_it)->send(buf, len);
+        }
+
+        std::size_t receive(char* buf, std::size_t len)
+        {
+            if (buf == nullptr)
+                throw std::runtime_error("Invalid buffer value: nullptr");
+
+            return (*m_sock_it)->receive(buf, len);
         }
 
         ~Connection()
@@ -114,7 +122,7 @@ public:
     ~ConnectionManager() { stop(); }
 };
 
-void sig_handler(int /*signal*/)
+void sig_handler(int)
 {
     ConnectionManager::instance().stop();
     IS_DONE = true;
@@ -122,7 +130,10 @@ void sig_handler(int /*signal*/)
 
 // TODO: Create ThreadPool abstraction to manage finished threads.
 // TODO: Move this_thread from workers to finished (using iterator, see TSQueue.hpp).
-void spam_timestamp(ConnectionManager::Connection conn, TSQueue<std::thread>& workers, TSQueue<std::thread>& finished)
+void spam_timestamp(
+        ConnectionManager::Connection conn
+      , TSQueue<std::thread::id, std::thread>& workers
+      , TSQueue<std::thread::id, std::thread>& finished)
 {
     for (unsigned i = 0; i < 5; ++i)
     {
@@ -140,40 +151,54 @@ void spam_timestamp(ConnectionManager::Connection conn, TSQueue<std::thread>& wo
         std::this_thread::sleep_for(seconds(2));
     }
 
+
+    auto wl = workers.lock();
+    auto fl = finished.lock();
+    auto it = wl.find(std::this_thread::get_id());
+    assert(it != wl.cend());
+    fl.emplace(std::move(*it));
+    // Does erase throw?
+    [&wl, &it]() noexcept {wl.erase(it);}();
 }
 
 int main()
 {
     ConnectionManager::instance().start("127.0.0.1", 9999);
-    TSQueue<std::thread> workers;
-    TSQueue<std::thread> finished;
+    TSQueue<std::thread::id, std::thread> workers;
+    TSQueue<std::thread::id, std::thread> finished;
 
     auto accept_conn = [&workers, &finished]
     {
         while (!IS_DONE)
         {
-            std::signal(SIGINT, sig_handler);
-            std::signal(SIGTERM, sig_handler);
             // Note: We must work with ConnectionManager only in a single thread.
             // That's why we mask all signals, to guarantee the signal handler will be called in this thread context.
-            auto conn = ConnectionManager::instance().accept();
-            std::signal(SIGINT, SIG_IGN);
-            std::signal(SIGTERM, SIG_IGN);
-            workers.lock().push(
-                std::thread {&spam_timestamp, std::move(conn), std::ref(workers), std::ref(finished)}
-            );
+            SignalMask mask {Sig::interupt, Sig::terminate};
+            mask.unlock();
+            try
+            {
+                auto conn = ConnectionManager::instance().accept();
+                mask.lock();
+                std::thread t {&spam_timestamp, std::move(conn), std::ref(workers), std::ref(finished)};
+                workers.lock().emplace(t.get_id(), std::move(t));
+            }
+            catch (const SocketClosedError& ex)
+            {
+                std::cout << ex.what() << std::endl;
+            }
         }
     };
 
-    // Make it quit on Ctrl-C (bug??)
-    std::signal(SIGINT, SIG_IGN);
-    std::signal(SIGTERM, SIG_IGN);
+    std::signal(SIGINT, sig_handler);
+    std::signal(SIGTERM, sig_handler);
+    SignalMask mask {Sig::interupt, Sig::terminate};
+    std::lock_guard<SignalMask> sig_guard(mask);
     std::thread accept_thrd{accept_conn};
 
     while (!IS_DONE)
     {
         // TODO: Exception safety (RAII adapter "ThreadPool"??)
-        std::queue<std::thread> tmp;
+        std::unordered_map<std::thread::id, std::thread> tmp;
         {
         auto tlock = finished.lock();
         // Looping should handle spurious wake ups.
@@ -183,11 +208,9 @@ int main()
         );
         tlock.swap(tmp);
         }
-        while (!tmp.empty())
-        {
-            tmp.front().join();
-            tmp.pop();
-        }
+
+        for (auto it = tmp.begin(), last = tmp.end(); it != last; it = tmp.erase(it))
+            it->second.join();
     }
 
     accept_thrd.join();

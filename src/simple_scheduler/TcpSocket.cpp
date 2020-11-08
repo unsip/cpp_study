@@ -11,7 +11,6 @@
 #include <cassert>
 #include <stdexcept>
 
-
 /**
  * Utility object for representing system locale and converting any given
  * system error to C-string.
@@ -236,6 +235,8 @@ TCPSocket TCPSocket::accept()
     {
         switch (errno)
         {
+            case EBADF:
+                throw SocketClosedError("Socket fd was closed!");
             case ECONNABORTED:
             case EMFILE:
             case ENFILE:
