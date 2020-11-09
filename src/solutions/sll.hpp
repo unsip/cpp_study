@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iosfwd>
 #include <cassert>
 #include <string>
 
