@@ -111,7 +111,8 @@ void SingleLinkedList::clear(const Node* head) noexcept
 
 // Copy ctor
 SingleLinkedList::SingleLinkedList(const SingleLinkedList& lst)
-    : m_lst_size{lst.m_lst_size}, m_head{copy(lst.m_head)}
+    : m_head{copy(lst.m_head)}
+    , m_lst_size{lst.m_lst_size}
 {}
 
 SingleLinkedList& SingleLinkedList::operator = (SingleLinkedList rhv)

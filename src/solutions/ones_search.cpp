@@ -29,11 +29,10 @@ std::size_t find_max_ones_subsequence(int* seq, std::size_t seq_size)
 
     for (size_t i = 0; i < seq_size; ++i)
     {
-        assert("Can't be 1 and 3 simultaniously" && (
-             is_none_state()
-          != is_sequence_state()
-          != is_possible_sequence_state()
-        ));
+        assert("Can't be 1 and 3 simultaniously" &&
+             is_none_state() != is_sequence_state()
+          && is_none_state() != is_possible_sequence_state()
+        );
 
         // None state
         if (is_none_state())
@@ -83,11 +82,10 @@ std::size_t find_max_ones_subsequence(int* seq, std::size_t seq_size)
         }
     } // For loop end
 
-    assert("Can't be 1 and 3 simultaniously" && (
-         is_none_state()
-      != is_sequence_state()
-      != is_possible_sequence_state()
-    ));
+    assert("Can't be 1 and 3 simultaniously" &&
+         is_none_state() != is_sequence_state()
+      && is_none_state() != is_possible_sequence_state()
+    );
 
     if (result < current_length_cntr)
         result = current_length_cntr;
@@ -99,8 +97,8 @@ int main()
 {
     using namespace std;
     {
-        int seq[] = {};
-        assert("Empty arr" && 0 == find_max_ones_subsequence(seq,  ARR_SIZE(seq)));
+        int seq[1] = {};
+        assert("Empty arr" && 0 == find_max_ones_subsequence(seq,  0));
     }
     {
         int seq[] = {0, 0, 0};
