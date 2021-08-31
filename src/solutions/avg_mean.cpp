@@ -24,8 +24,8 @@ order avg(order lhv, order rhv)
     if (lhv == order::mempty())
         return rhv;
 
-    double total = lhv.quantity + rhv.quantity;
-    double avg = lhv.quantity / total * lhv.avg_price + rhv.quantity / total * rhv.avg_price;
+    std::size_t total = lhv.quantity + rhv.quantity;
+    double avg = double(lhv.quantity) / total * lhv.avg_price + double(rhv.quantity) / total * rhv.avg_price;
     return {avg, total};
 }
 
@@ -35,9 +35,9 @@ int main()
     {
         return {a, 1};
     };
-    std::vector<double> lst = {1, 2, 3, 4, 5, 6, 42, 11, 13};
+    std::vector<double> lst{1, 2, 3, 4, 5, 6, 42, 11, 13};
     auto rng = lst | std::ranges::views::transform(cast);
-    auto res = std::accumulate(begin(rng), end(rng), order::mempty(), avg);
+    auto res = std::accumulate(std::cbegin(rng), std::cend(rng), order::mempty(), avg);
 
     std::cout << "Result: " << std::setprecision(10) << res.avg_price << " " << res.quantity << std::endl;
 }
