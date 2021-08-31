@@ -6,3 +6,5 @@ add_executable(avg_mean avg_mean.cpp)
 add_library(sll sll.cpp)
 add_executable(sll_test sll_test.cpp)
 target_link_libraries(sll_test PRIVATE sll)
+
+add_subdirectory(tests)
