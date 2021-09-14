@@ -30,7 +30,7 @@ template <std::ranges::forward_range Rng>
 TimePointMock(const Rng&) -> TimePointMock<decltype(begin(std::declval<Rng>()))>;
 
 
-TEST_F(SineWaveTest, SimpleRatTest)
+TEST_F(SineWaveTest, SimpleWaveTest)
 {
     std::vector tps = {
         std::chrono::steady_clock::time_point {std::chrono::milliseconds {0}}
@@ -46,12 +46,12 @@ TEST_F(SineWaveTest, SimpleRatTest)
 
 
     // @todo: Correct tests
-    EXPECT_EQ(0., wave_gen.get());
-    EXPECT_EQ(0.5, wave_gen.get());
-    EXPECT_EQ(1., wave_gen.get());
-    EXPECT_EQ(0.5, wave_gen.get());
-    EXPECT_EQ(0., wave_gen.get());
-    EXPECT_EQ(-1., wave_gen.get());
-    EXPECT_EQ(0., wave_gen.get());
+    EXPECT_NEAR(0.000, wave_gen.get(), 0.01);
+    EXPECT_NEAR(0.707, wave_gen.get(), 0.01);
+    EXPECT_NEAR(1., wave_gen.get(), 0.01);
+    EXPECT_NEAR(0.5, wave_gen.get(), 0.01);
+    EXPECT_NEAR(0., wave_gen.get(), 0.01);
+    EXPECT_NEAR(-1., wave_gen.get(), 0.01);
+    EXPECT_NEAR(0., wave_gen.get(), 0.01);
 }
 

@@ -1,19 +1,9 @@
 #pragma once
 
-#include <iostream>
 #include <cmath>
 #include <cassert>
 #include <chrono>
 #include <numbers>
-
-
-template <typename T>
-class Stream
-{
-public:
-    virtual bool has_next() = 0;
-    virtual T get() = 0;
-};
 
 
 template <typename T>
@@ -59,9 +49,7 @@ public:
     Builder(const WaveArgs& args) : args(args) {}
 
     // CV qualifier based overload resolution.
-    operator const WaveArgs&() const & { return args; }
-    operator WaveArgs&&() && { return std::move(args); }
-
+    operator const WaveArgs&() const & { return args; } operator WaveArgs&&() && { return std::move(args); } 
     Builder& step(double step) { this->args.m_step = step; return *this; }
     Builder& amp(double amp) { this->args.m_amp = amp; return *this; }
     Builder& frequency(double frequency) { this->args.m_frequency = frequency; return *this; }
@@ -71,8 +59,7 @@ public:
 
 
 class TimePointGen: public Generator<std::chrono::steady_clock::time_point>
-{
-public:
+{ public:
     std::chrono::steady_clock::time_point get() const override
     {
         return std::chrono::steady_clock::now();
@@ -93,16 +80,68 @@ public:
     double get() const override
     {
         auto tp = m_time_gen.get();
-        using time_point = std::chrono::steady_clock::time_point;
-        using namespace std::chrono;
-        std::cout << time_point{nanoseconds{0}}.time_since_epoch().count() << std::endl;
-        std::cout << time_point{milliseconds{0}}.time_since_epoch().count() << std::endl;
-
-        std::cout << "Since epoch: " << tp.time_since_epoch().count() << std::endl;
         auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
-        double rad = (ms % 1000 / 1000. * m_args.frequency()) * 2 * std::numbers::pi_v<double>;
-        std::cout << "Ms: " << ms << std::endl;
-        std::cout << "Rad: " << rad << std::endl;
+        double rad = (ms / 1000. * m_args.frequency()) * 2 * std::numbers::pi_v<double>;
+        assert(rad >= 0.);
         return std::sin(rad + m_args.phase()) * m_args.amp() + m_args.y_offset();
+    }
+};
+
+template <typename T>
+inline constexpr signed char sgn(const T& value)
+{
+    return (T{} < value) - (value < T{});
+}
+
+//class SquareWave : public Generator<double>
+//{
+//    const SineWave& m_sine_gen;
+//
+//public:
+//    SquareWave(const SineWave& gen)
+//        : m_sine_gen(gen)
+//    {}
+//
+//    double get() const override
+//    {
+//        return sgn(m_sine_gen.get());
+//    }
+//};
+
+
+class SawToothWave: public Generator<double>
+{
+    WaveArgs m_args;
+    const Generator<std::chrono::steady_clock::time_point>& m_time_gen;
+
+public:
+    SawToothWave(const WaveArgs& args, const Generator<std::chrono::steady_clock::time_point>& gen)
+        : m_args(args), m_time_gen(gen)
+    {}
+
+    double get() const override
+    {
+        auto tp = m_time_gen.get();
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
+        return -2. * m_args.amp() / std::numbers::pi_v<double> * std::atan(
+            1. / std::tan(ms / 1000. * m_args.frequency() * std::numbers::pi_v<double> + m_args.phase())
+        );
+    }
+};
+
+
+class RingModulator : public Generator<double>
+{
+    const Generator<double>& m_carrier;
+    const Generator<double>& m_modulator;
+
+public:
+    RingModulator(const Generator<double>& carrier, const Generator<double>& modulator)
+        : m_carrier(carrier), m_modulator(modulator)
+    {}
+
+    double get() const override
+    {
+        return m_carrier.get() + m_modulator.get();
     }
 };
