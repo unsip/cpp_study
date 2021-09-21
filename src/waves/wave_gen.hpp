@@ -85,28 +85,22 @@ class SineWave: public Generator<double>
     const Generator<std::chrono::steady_clock::time_point>& m_time_gen;
     mutable double m_curr_freq;
     mutable double m_curr_phase;
-    mutable std::chrono::milliseconds m_prev_tp;
 
 public:
     SineWave() = default;
     SineWave(const WaveArgs& args, const Generator<std::chrono::steady_clock::time_point>& gen)
         : m_args(args), m_time_gen(gen), m_curr_freq(args.frequency())
     {
-        m_prev_tp = std::chrono::duration_cast<std::chrono::milliseconds>(gen.get().time_since_epoch());
     }
 
     double get() const override
     {
-        auto tp = m_time_gen.get();
-        auto ms = m_prev_tp.count();
-        m_prev_tp = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch());
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(m_time_gen.get().time_since_epoch()).count();
         double rad = (ms / 1000. * m_curr_freq) * 2 * std::numbers::pi_v<double>;
         double res = std::sin(rad + m_curr_phase) * m_args.amp() + m_args.y_offset();
         m_curr_freq = m_args.frequency();
         double rad2 = (ms / 1000. * m_curr_freq) * 2 * std::numbers::pi_v<double>;
-        m_curr_phase = rad2 - rad;
-        assert(rad >= 0.);
-        assert(rad2 >= 0.);
+        m_curr_phase = rad + m_curr_phase - rad2;
         //assert(res + 0.00001 > std::sin(rad2 + m_curr_phase) * m_args.amp() + m_args.y_offset());
         //assert(res - 0.00001 < std::sin(rad2 + m_curr_phase) * m_args.amp() + m_args.y_offset());
         return res;
