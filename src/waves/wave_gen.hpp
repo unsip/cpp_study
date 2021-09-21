@@ -25,32 +25,33 @@ private:
         const Generator<double>* m_gen = nullptr;
         double m_value = 0.;
     public:
-        Arg(double v) : m_value(v) {}
-        Arg(const Generator<double>& gen) : m_gen(&gen) {}
+        Arg(double v) noexcept : m_value(v) {}
+        Arg(const Generator<double>& gen) noexcept : m_gen(&gen) {}
 
-        double value() const
+        operator double() const
         {
             return m_gen != nullptr ? m_gen->get() : m_value;
         }
     };
 
-    Arg m_step = Arg {0.};
-    Arg m_amp = Arg {1.};
+    Arg m_step {0.};
+    Arg m_amp {1.};
     // Hertz
-    Arg m_frequency = Arg {1.};
-    Arg m_phase = Arg {0.};
-    Arg m_y_offset = Arg {0.};
+    Arg m_frequency {1.};
+    Arg m_phase {0.};
+    Arg m_y_offset {0.};
+
 public:
     class Builder;
 
     // Wave amplitude size
-    double amp() const { return m_amp.value(); }
+    double amp() const { return m_amp; }
     // Wave frequency
-    double frequency() const { return m_frequency.value(); }
+    double frequency() const { return m_frequency; }
     // Phase offset
-    double phase() const { return m_phase.value(); }
+    double phase() const { return m_phase; }
     // Amplitude offset
-    double y_offset() const { return m_y_offset.value(); }
+    double y_offset() const { return m_y_offset; }
 };
 
 
@@ -89,6 +90,7 @@ class SineWave: public Generator<double>
 public:
     SineWave() = default;
     SineWave(const WaveArgs& args, const Generator<std::chrono::steady_clock::time_point>& gen)
+        noexcept
         : m_args(args), m_time_gen(gen), m_curr_freq(args.frequency())
     {
     }
@@ -101,18 +103,17 @@ public:
         m_curr_freq = m_args.frequency();
         double rad2 = (ms / 1000. * m_curr_freq) * 2 * std::numbers::pi_v<double>;
         m_curr_phase = rad + m_curr_phase - rad2;
-        //assert(res + 0.00001 > std::sin(rad2 + m_curr_phase) * m_args.amp() + m_args.y_offset());
-        //assert(res - 0.00001 < std::sin(rad2 + m_curr_phase) * m_args.amp() + m_args.y_offset());
         return res;
     }
 };
 
+/*
 template <typename T>
 inline constexpr signed char sgn(const T& value)
 {
     return (T{} < value) - (value < T{});
 }
-
+*/
 
 class SawToothWave: public Generator<double>
 {
@@ -121,6 +122,7 @@ class SawToothWave: public Generator<double>
 
 public:
     SawToothWave(const WaveArgs& args, const Generator<std::chrono::steady_clock::time_point>& gen)
+        noexcept
         : m_args(args), m_time_gen(gen)
     {}
 
@@ -141,7 +143,7 @@ class Modulator: public Generator<double>
     const Generator<double>& m_modulator;
 
 public:
-    Modulator(const Generator<double>& carrier, const Generator<double>& modulator)
+    Modulator(const Generator<double>& carrier, const Generator<double>& modulator) noexcept
         : m_carrier(carrier), m_modulator(modulator)
     {}
 
