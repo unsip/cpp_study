@@ -58,12 +58,40 @@ void NcurseOneLineRenderer::render(double point)
     assert(bar_sz < m_height);
 
     // graph line color depends on signal level
-    const int color = bar_sz * 4 / m_height + 1;
+    constexpr auto COLORS = 4;
+    const int color = static_cast<int>(float(bar_sz) * COLORS / m_height) + 1;
+    const auto rng = float(m_height) / COLORS;
+    assert(color != 1 || float(bar_sz) < rng);
+    assert(color != 2 || float(bar_sz) < 2 * rng);
+    assert(color != 3 || float(bar_sz) < 3 * rng);
+    assert(color == 4 || float(bar_sz) < 4 * rng);
+
+    // a separate color range
+    const auto cur_color_rng = bar_sz - rng * static_cast<int>(bar_sz / rng);
+    constexpr auto ATTRS = 3;
+    // color depth attribute
+    const int attr = static_cast<int>(float(cur_color_rng) * ATTRS / rng);
+    assert(attr >= 0);
+    assert(attr <= ATTRS);
+    assert(attr != 0 || cur_color_rng < rng / 2);
+    assert(attr != 2 || cur_color_rng > rng / 2);
+
+    assert(attr != 0 || cur_color_rng < rng / ATTRS);
+    assert(attr != 1 || cur_color_rng < 2 * rng / ATTRS);
+    assert(attr != 2 || cur_color_rng < 3 * rng / ATTRS);
 
     // graph bar's top Y coordinate
     const auto pos = m_height - bar_sz;
     wmove(m_cur, pos, 0);
-    wattrset(m_cur, COLOR_PAIR(color) | A_BOLD);
+    wattrset(m_cur, COLOR_PAIR(color) | [attr] {
+        switch (attr) {
+          default:
+            assert(false);
+          case 1: return 0u;
+          case 0: return A_DIM;
+          case 2: return A_BOLD;
+        }
+    }());
 
     // graph line size
     constexpr auto MAX_GAUGE = 5;
