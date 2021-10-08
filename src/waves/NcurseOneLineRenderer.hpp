@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Renderer.hpp"
+#include <chrono>
 #include <ncurses.h>
 
 class NcurseOneLineRenderer : public Renderer
@@ -18,6 +19,7 @@ class NcurseOneLineRenderer : public Renderer
     // ncurses pads to implement double bufferring
     WINDOW* m_prev;
     WINDOW* m_cur;
+    std::chrono::steady_clock::time_point m_prev_tp;
 
 public:
     NcurseOneLineRenderer(double min_level, double max_level);

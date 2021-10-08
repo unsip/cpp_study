@@ -18,6 +18,7 @@ add_compile_options(
     -Wpedantic
 )
 
+set(CURSES_NEED_WIDE TRUE)
 find_package(Curses REQUIRED)
 find_package(GTest)
 

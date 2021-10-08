@@ -27,7 +27,8 @@ NcurseOneLineRenderer::NcurseOneLineRenderer(double min_level, double max_level)
     start_color();
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
-    init_pair(3, COLOR_RED, COLOR_BLACK);
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(4, COLOR_RED, COLOR_BLACK);
 }
 
 NcurseOneLineRenderer::~NcurseOneLineRenderer()
@@ -39,36 +40,48 @@ NcurseOneLineRenderer::~NcurseOneLineRenderer()
 
 void NcurseOneLineRenderer::render(double point)
 {
-    constexpr char BLOCK = '@';
-
     wclear(m_cur);
     copywin(m_prev, m_cur, 0, 0, 0, 1, m_height - 1, m_width - 2, false/*not override*/);
 
-    int color = 1;
-    int pos = point < m_min_level
+    // signal lvl in terms of graph bar size
+    int bar_sz = point < m_min_level
         ? m_height - 1
         : m_max_level < point
             ? 0
             : std::abs((point - m_min_level) / m_sample_rate);
 
-    if (pos < 0)
-        pos = m_height - 1 + pos; 
+    // invert graph if ratio is negative
+    if (bar_sz < 0)
+        bar_sz = m_height + bar_sz; 
 
-    assert(pos >= 0);
-    assert(pos < m_height);
+    assert(bar_sz >= 0);
+    assert(bar_sz < m_height);
 
     // graph line color depends on signal level
-    color = pos * 3 / m_height + 1;
+    const int color = bar_sz * 4 / m_height + 1;
+
+    // graph bar's top Y coordinate
+    const auto pos = m_height - bar_sz;
     wmove(m_cur, pos, 0);
     wattrset(m_cur, COLOR_PAIR(color) | A_BOLD);
 
     // graph line size
     constexpr auto MAX_GAUGE = 5;
-    auto gauge = std::min(MAX_GAUGE, m_height - pos);
-    assert(gauge >= 1);
+    const auto gauge = std::min(MAX_GAUGE, bar_sz);
+    assert(gauge >= 0);
     assert(pos + gauge <= m_height);
-    wvline(m_cur, BLOCK, gauge);
 
-    prefresh(m_cur, 0, 0, 0, 0, m_height - 1, m_width - 1);
+    wvline_set(m_cur, WACS_BLOCK, gauge);
+
+    using namespace std::chrono;
+    auto now = steady_clock::now();
+    constexpr auto FRAME_RATE = 5;
+    using namespace std::literals::chrono_literals;
+    if (now >= m_prev_tp + 1000ms / FRAME_RATE)
+    {
+        prefresh(m_cur, 0, 0, 0, 0, m_height - 1, m_width - 1);
+        m_prev_tp = now;
+    }
+
     std::swap(m_prev, m_cur);
 }
