@@ -1,4 +1,4 @@
-#include "OneLineRenderer.hpp"
+#include "NcurseOneLineRenderer.hpp"
 #include "sampler.hpp"
 
 int main()
@@ -22,7 +22,8 @@ int main()
     };
     SineWave sine_gen {WaveArgs::Builder{}.frequency(mod_sine), tp_gen};
 
-    OneLineRenderer term_renderer {100, -1., 1.};
+    std::cout.sync_with_stdio(false);
+    NcurseOneLineRenderer term_renderer {-1., 1.};
     Sampler sampler {sine_gen, term_renderer, 150};
     sampler.start();
     sampler.run();
