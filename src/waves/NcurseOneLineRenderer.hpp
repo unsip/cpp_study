@@ -2,31 +2,22 @@
 
 #include "Renderer.hpp"
 #include <chrono>
-#include <ncurses.h>
+#include <memory>
 
 class NcurseOneLineRenderer : public Renderer
 {
-    // ncurses main screen
-    WINDOW* m_screen;
-    // terminal screen dimenstions
-    int m_width;
-    int m_height;
+    class Impl;
     // income signal level to represent one vertical point
     // can be negative if original max lvl less than min
+    std::unique_ptr<Impl> m_impl;
     double m_sample_rate;
     double m_min_level;
     double m_max_level;
-    // ncurses pads to implement double bufferring
-    WINDOW* m_prev;
-    WINDOW* m_cur;
     std::chrono::steady_clock::time_point m_prev_tp;
 
 public:
     NcurseOneLineRenderer(double min_level, double max_level);
     ~NcurseOneLineRenderer();
-
-    NcurseOneLineRenderer(const NcurseOneLineRenderer&) = delete;
-    NcurseOneLineRenderer& operator=(const NcurseOneLineRenderer&) = delete;
 
     void render(double point) override;
 };

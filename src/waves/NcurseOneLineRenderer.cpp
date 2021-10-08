@@ -1,25 +1,61 @@
 #include "NcurseOneLineRenderer.hpp"
+#include "raii.h"
 #include <algorithm>
 #include <iostream>
 #include <cassert>
+#include <ncurses.h>
 
+namespace {
+
+auto create_pad(int height, int width)
+{
+    return make_raii(
+        [height, width] {
+            auto rslt = newpad(height, width);
+            if (!rslt)
+                throw std::runtime_error{"Ncurses error: unable to initialize pad"};
+            return rslt;
+        }
+      , [] (auto pad) { delwin(pad); }
+    );
+}
+
+auto create_screen()
+{
+    return make_raii(
+        []{
+            if (!initscr())
+                throw std::runtime_error{"Ncurses error: unable to initialize main screen"};
+        }
+      , []{ endwin(); }
+    );
+}
+
+} // anonymous namespace
+
+struct NcurseOneLineRenderer::Impl
+{
+    // ncurses main screen
+    decltype(create_screen()) m_screen = create_screen();
+    // terminal screen dimenstions
+    int m_width{COLS};
+    int m_height{LINES};
+    // ncurses pads to implement double bufferring
+    decltype(create_pad(m_height, m_width)) m_prev = create_pad(m_height, m_width);
+    decltype(create_pad(m_height, m_width)) m_cur = create_pad(m_height, m_width);
+};
 
 NcurseOneLineRenderer::NcurseOneLineRenderer(double min_level, double max_level)
-  : m_screen{initscr()}
-  , m_width{COLS}
-  , m_height{LINES}
-  , m_sample_rate{(max_level - min_level) / m_height}
+  : m_impl{std::make_unique<Impl>()}
+  , m_sample_rate{ [](auto min_level, auto max_level, auto height) -> double {
+      auto rslt = (max_level - min_level) / height;
+      if (rslt == 0.0)
+          throw std::runtime_error{"Invalid signal range"};
+      return rslt;
+  }(min_level, max_level, m_impl->m_height) }
   , m_min_level{std::min(min_level, max_level)}
   , m_max_level{std::max(min_level, max_level)}
-  , m_prev{newpad(m_height, m_width)} 
-  , m_cur{newpad(m_height, m_width)} 
 {
-    /// @todo exception safety
-    if (!m_screen || !m_prev || !m_cur)
-        throw std::runtime_error{"Unable to initialize ncurse"};
-    if (m_sample_rate == 0.0)
-        throw std::runtime_error{"Invalid signal range"};
-
     assert(m_min_level < m_max_level);
 
     noecho();
@@ -31,36 +67,31 @@ NcurseOneLineRenderer::NcurseOneLineRenderer(double min_level, double max_level)
     init_pair(4, COLOR_RED, COLOR_BLACK);
 }
 
-NcurseOneLineRenderer::~NcurseOneLineRenderer()
-{
-    delwin(m_cur);
-    delwin(m_prev);
-    endwin();
-}
+NcurseOneLineRenderer::~NcurseOneLineRenderer() = default;
 
 void NcurseOneLineRenderer::render(double point)
 {
-    wclear(m_cur);
-    copywin(m_prev, m_cur, 0, 0, 0, 1, m_height - 1, m_width - 2, false/*not override*/);
+    wclear(*m_impl->m_cur);
+    copywin(*m_impl->m_prev, *m_impl->m_cur, 0, 0, 0, 1, m_impl->m_height - 1, m_impl->m_width - 2, false/*not override*/);
 
     // signal lvl in terms of graph bar size
     int bar_sz = point < m_min_level
-        ? m_height - 1
+        ? m_impl->m_height - 1
         : m_max_level < point
             ? 0
             : std::abs((point - m_min_level) / m_sample_rate);
 
     // invert graph if ratio is negative
     if (bar_sz < 0)
-        bar_sz = m_height + bar_sz; 
+        bar_sz = m_impl->m_height + bar_sz; 
 
     assert(bar_sz >= 0);
-    assert(bar_sz < m_height);
+    assert(bar_sz < m_impl->m_height);
 
     // graph line color depends on signal level
     constexpr auto COLORS = 4;
-    const int color = static_cast<int>(float(bar_sz) * COLORS / m_height) + 1;
-    const auto rng = float(m_height) / COLORS;
+    const int color = static_cast<int>(float(bar_sz) * COLORS / m_impl->m_height) + 1;
+    const auto rng = float(m_impl->m_height) / COLORS;
     assert(color != 1 || float(bar_sz) < rng);
     assert(color != 2 || float(bar_sz) < 2 * rng);
     assert(color != 3 || float(bar_sz) < 3 * rng);
@@ -81,9 +112,9 @@ void NcurseOneLineRenderer::render(double point)
     assert(attr != 2 || cur_color_rng < 3 * rng / ATTRS);
 
     // graph bar's top Y coordinate
-    const auto pos = m_height - bar_sz;
-    wmove(m_cur, pos, 0);
-    wattrset(m_cur, COLOR_PAIR(color) | [attr] {
+    const auto pos = m_impl->m_height - bar_sz;
+    wmove(*m_impl->m_cur, pos, 0);
+    wattrset(*m_impl->m_cur, COLOR_PAIR(color) | [attr] {
         switch (attr) {
           default:
             assert(false);
@@ -97,9 +128,9 @@ void NcurseOneLineRenderer::render(double point)
     constexpr auto MAX_GAUGE = 5;
     const auto gauge = std::min(MAX_GAUGE, bar_sz);
     assert(gauge >= 0);
-    assert(pos + gauge <= m_height);
+    assert(pos + gauge <= m_impl->m_height);
 
-    wvline_set(m_cur, WACS_BLOCK, gauge);
+    wvline_set(*m_impl->m_cur, WACS_BLOCK, gauge);
 
     using namespace std::chrono;
     auto now = steady_clock::now();
@@ -107,9 +138,9 @@ void NcurseOneLineRenderer::render(double point)
     using namespace std::literals::chrono_literals;
     if (now >= m_prev_tp + 1000ms / FRAME_RATE)
     {
-        prefresh(m_cur, 0, 0, 0, 0, m_height - 1, m_width - 1);
+        prefresh(*m_impl->m_cur, 0, 0, 0, 0, m_impl->m_height - 1, m_impl->m_width - 1);
         m_prev_tp = now;
     }
 
-    std::swap(m_prev, m_cur);
+    std::swap(m_impl->m_prev, m_impl->m_cur);
 }
