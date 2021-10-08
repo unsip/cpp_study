@@ -1,3 +1,4 @@
+#include "OneLineRenderer.hpp"
 #include "sampler.hpp"
 
 int main()
