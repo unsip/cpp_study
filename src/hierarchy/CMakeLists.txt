@@ -25,12 +25,14 @@ add_library(
 add_executable(
     battle
     main.cpp
-)
+  )
 
 target_link_libraries(
     battle
     PRIVATE
         bestiary
-)
+  )
 
-add_subdirectory(tests)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
