@@ -1,5 +1,5 @@
 #include "NcurseOneLineRenderer.hpp"
-#include "raii.h"
+#include "raii.hpp"
 #include <algorithm>
 #include <iostream>
 #include <cassert>

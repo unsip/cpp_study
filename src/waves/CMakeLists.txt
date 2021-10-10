@@ -7,7 +7,7 @@ add_executable(
 
 target_link_libraries(
     WavingStuff
-    PUBLIC
+    PRIVATE
       ${CURSES_NCURSES_LIBRARY}
       ${CURSES_EXTRA_LIBRARY}
 )
