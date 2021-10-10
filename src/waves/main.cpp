@@ -1,4 +1,5 @@
 #include "NcurseOneLineRenderer.hpp"
+#include "OneLineRenderer.hpp"
 #include "sampler.hpp"
 
 int main()
@@ -24,6 +25,7 @@ int main()
 
     std::cout.sync_with_stdio(false);
     setlocale(LC_ALL, "");
+    //OneLineRenderer term_renderer {150, -1., 1.};
     NcurseOneLineRenderer term_renderer {-1., 1.};
     Sampler sampler {sine_gen, term_renderer, 150};
     sampler.start();

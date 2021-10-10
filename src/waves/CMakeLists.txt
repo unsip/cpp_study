@@ -1,7 +1,7 @@
 add_executable(
     WavingStuff
     main.cpp
-    #OneLineRenderer.cpp
+    OneLineRenderer.cpp
     NcurseOneLineRenderer.cpp
 )
 

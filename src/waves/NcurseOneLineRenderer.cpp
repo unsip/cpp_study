@@ -9,7 +9,7 @@ namespace {
 
 auto create_pad(int height, int width)
 {
-    return make_raii(
+    return raii{
         [height, width] {
             auto rslt = newpad(height, width);
             if (!rslt)
@@ -17,18 +17,18 @@ auto create_pad(int height, int width)
             return rslt;
         }
       , [] (auto pad) { delwin(pad); }
-    );
+    };
 }
 
 auto create_screen()
 {
-    return make_raii(
+    return raii{
         []{
             if (!initscr())
                 throw std::runtime_error{"Ncurses error: unable to initialize main screen"};
         }
       , []{ endwin(); }
-    );
+    };
 }
 
 } // anonymous namespace
@@ -134,7 +134,7 @@ void NcurseOneLineRenderer::render(double point)
 
     using namespace std::chrono;
     auto now = steady_clock::now();
-    constexpr auto FRAME_RATE = 5;
+    constexpr auto FRAME_RATE = 25;
     using namespace std::literals::chrono_literals;
     if (now >= m_prev_tp + 1000ms / FRAME_RATE)
     {
