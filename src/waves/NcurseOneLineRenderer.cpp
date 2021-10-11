@@ -31,6 +31,9 @@ auto create_screen()
     };
 }
 
+/// @todo External parameter to change buffer size depending on a sampler rate
+constexpr int BUFFER_MULT = 2;
+
 } // anonymous namespace
 
 struct NcurseOneLineRenderer::Impl
@@ -41,8 +44,9 @@ struct NcurseOneLineRenderer::Impl
     int m_width{COLS};
     int m_height{LINES};
     // ncurses pads to implement double bufferring
-    decltype(create_pad(m_height, m_width)) m_prev = create_pad(m_height, m_width);
-    decltype(create_pad(m_height, m_width)) m_cur = create_pad(m_height, m_width);
+    decltype(create_pad(0, 0)) m_prev = create_pad(m_height, m_width * BUFFER_MULT);
+    decltype(m_prev) m_cur = create_pad(m_height, m_width * BUFFER_MULT);
+    int m_cur_pos = m_width * (BUFFER_MULT - 1);
 };
 
 NcurseOneLineRenderer::NcurseOneLineRenderer(double min_level, double max_level)
@@ -71,9 +75,6 @@ NcurseOneLineRenderer::~NcurseOneLineRenderer() = default;
 
 void NcurseOneLineRenderer::render(double lvl)
 {
-    wclear(*m_impl->m_cur);
-    copywin(*m_impl->m_prev, *m_impl->m_cur, 0, 0, 0, 1, m_impl->m_height - 1, m_impl->m_width - 2, false/*not override*/);
-
     // signal lvl in terms of graph bar size
     int bar_sz = lvl < m_min_level
         ? 0
@@ -113,7 +114,7 @@ void NcurseOneLineRenderer::render(double lvl)
 
     // graph bar's top Y coordinate
     const auto pos = m_impl->m_height - bar_sz;
-    wmove(*m_impl->m_cur, pos, 0);
+    wmove(*m_impl->m_cur, pos, m_impl->m_cur_pos);
     wattrset(*m_impl->m_cur, COLOR_PAIR(color) | [attr] {
         switch (attr) {
           default:
@@ -134,13 +135,41 @@ void NcurseOneLineRenderer::render(double lvl)
 
     using namespace std::chrono;
     auto now = steady_clock::now();
-    constexpr auto FRAME_RATE = 25;
+    constexpr auto FRAME_RATE = 7;
     using namespace std::literals::chrono_literals;
     if (now >= m_prev_tp + 1000ms / FRAME_RATE)
     {
-        prefresh(*m_impl->m_cur, 0, 0, 0, 0, m_impl->m_height - 1, m_impl->m_width - 1);
+        prefresh(
+            *m_impl->m_cur                                  // pad
+          , 0                                               // pminrow
+          , m_impl->m_cur_pos                               // pmincol
+          , 0                                               // sminrow
+          , 0                                               // smincol
+          , m_impl->m_height - 1                            // smaxrow
+          , m_impl->m_width - 1                             // smaxcol
+        );
         m_prev_tp = now;
     }
 
-    std::swap(m_impl->m_prev, m_impl->m_cur);
+    if (0 == m_impl->m_cur_pos--)
+    {
+        m_impl->m_cur_pos = m_impl->m_width * (BUFFER_MULT - 1);
+        std::swap(m_impl->m_prev, m_impl->m_cur);
+        wclear(*m_impl->m_cur);
+        auto dmincol = m_impl->m_cur_pos  + 1;
+        auto dmaxcol = m_impl->m_width * BUFFER_MULT - 1;
+        copywin(
+            *m_impl->m_prev                                 // src
+          , *m_impl->m_cur                                  // dst
+          , 0                                               // sminrow, y
+          , 0                                               // smincol, x
+          , 0                                               // dminrow, y
+          , dmincol                                         // dmincol, x
+          , m_impl->m_height - 1                            // dmaxrow, y
+          , dmaxcol                                         // dmaxcol, x
+          , false                                           // don't override
+        );
+        assert(dmincol < dmaxcol);
+        assert(m_impl->m_width - 2 == dmaxcol - dmincol);
+    }
 }
