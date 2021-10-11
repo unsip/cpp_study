@@ -1,4 +1,5 @@
 #include "NcurseOneLineRenderer.hpp"
+#include "Zones.h"
 #include "raii.hpp"
 #include <algorithm>
 #include <iostream>
@@ -75,42 +76,31 @@ NcurseOneLineRenderer::~NcurseOneLineRenderer() = default;
 
 void NcurseOneLineRenderer::render(double lvl)
 {
+    constexpr auto COLORS = 4;
+    constexpr auto ATTRS = 3;
+    constexpr auto SHADES_NUM = COLORS * ATTRS;
+
+    assert(m_impl->m_height >= 0);
+    Zones zones{static_cast<std::size_t>(m_impl->m_height), SHADES_NUM};
+
     // signal lvl in terms of graph bar size
-    int bar_sz = lvl < m_min_level
-        ? 0
+    float bar_sz = lvl < m_min_level
+        ? zones.min()
         : m_max_level < lvl
-            ? m_impl->m_height
+            ? zones.max()
             : std::abs((lvl - m_min_level) / m_sample_rate);
 
     // invert graph if ratio is negative
     if (bar_sz < 0)
         bar_sz = m_impl->m_height + bar_sz; 
 
-    assert(bar_sz >= 0);
-    assert(bar_sz <= m_impl->m_height);
+    assert(bar_sz >= zones.min());
+    assert(bar_sz <= zones.max());
 
     // graph line color depends on signal level
-    constexpr auto COLORS = 4;
-    const int color = static_cast<int>(float(bar_sz) * COLORS / m_impl->m_height) + 1;
-    const auto rng = float(m_impl->m_height) / COLORS;
-    assert(color != 1 || float(bar_sz) < rng);
-    assert(color != 2 || float(bar_sz) < 2 * rng);
-    assert(color != 3 || float(bar_sz) < 3 * rng);
-    assert(color != 4 || float(bar_sz) < 4 * rng);
-
-    // a separate color range
-    const auto cur_color_rng = bar_sz - rng * static_cast<int>(bar_sz / rng);
-    constexpr auto ATTRS = 3;
+    const int color = zones.idx_by_lvl(bar_sz) / ATTRS + 1;
     // color depth attribute
-    const int attr = static_cast<int>(float(cur_color_rng) * ATTRS / rng);
-    assert(attr >= 0);
-    assert(attr <= ATTRS);
-    assert(attr != 0 || cur_color_rng < rng / 2);
-    assert(attr != 2 || cur_color_rng > rng / 2);
-
-    assert(attr != 0 || cur_color_rng < rng / ATTRS);
-    assert(attr != 1 || cur_color_rng < 2 * rng / ATTRS);
-    assert(attr != 2 || cur_color_rng < 3 * rng / ATTRS);
+    const int attr = zones.idx_by_lvl(bar_sz) % ATTRS;
 
     // graph bar's top Y coordinate
     const auto pos = m_impl->m_height - bar_sz;
@@ -127,7 +117,7 @@ void NcurseOneLineRenderer::render(double lvl)
 
     // graph line size
     constexpr auto MAX_GAUGE = 5;
-    const auto gauge = std::min(MAX_GAUGE, bar_sz);
+    const auto gauge = std::min<decltype(MAX_GAUGE)>(MAX_GAUGE, bar_sz);
     assert(gauge >= 0);
     assert(pos + gauge <= m_impl->m_height);
 
@@ -137,6 +127,7 @@ void NcurseOneLineRenderer::render(double lvl)
     auto now = steady_clock::now();
     constexpr auto FRAME_RATE = 7;
     using namespace std::literals::chrono_literals;
+    // draw new frame according frame rate setting
     if (now >= m_prev_tp + 1000ms / FRAME_RATE)
     {
         prefresh(
@@ -151,6 +142,7 @@ void NcurseOneLineRenderer::render(double lvl)
         m_prev_tp = now;
     }
 
+    // copy visible history data and swap pads
     if (0 == m_impl->m_cur_pos--)
     {
         m_impl->m_cur_pos = m_impl->m_width * (BUFFER_MULT - 1);

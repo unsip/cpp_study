@@ -1,6 +1,7 @@
 add_executable(
     WaveTest
     SineWaveTest.cpp
+    ZonesTest.cpp
 )
 target_link_libraries(
     WaveTest
