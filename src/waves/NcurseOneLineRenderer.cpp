@@ -69,24 +69,24 @@ NcurseOneLineRenderer::NcurseOneLineRenderer(double min_level, double max_level)
 
 NcurseOneLineRenderer::~NcurseOneLineRenderer() = default;
 
-void NcurseOneLineRenderer::render(double point)
+void NcurseOneLineRenderer::render(double lvl)
 {
     wclear(*m_impl->m_cur);
     copywin(*m_impl->m_prev, *m_impl->m_cur, 0, 0, 0, 1, m_impl->m_height - 1, m_impl->m_width - 2, false/*not override*/);
 
     // signal lvl in terms of graph bar size
-    int bar_sz = point < m_min_level
-        ? m_impl->m_height - 1
-        : m_max_level < point
-            ? 0
-            : std::abs((point - m_min_level) / m_sample_rate);
+    int bar_sz = lvl < m_min_level
+        ? 0
+        : m_max_level < lvl
+            ? m_impl->m_height
+            : std::abs((lvl - m_min_level) / m_sample_rate);
 
     // invert graph if ratio is negative
     if (bar_sz < 0)
         bar_sz = m_impl->m_height + bar_sz; 
 
     assert(bar_sz >= 0);
-    assert(bar_sz < m_impl->m_height);
+    assert(bar_sz <= m_impl->m_height);
 
     // graph line color depends on signal level
     constexpr auto COLORS = 4;
@@ -95,7 +95,7 @@ void NcurseOneLineRenderer::render(double point)
     assert(color != 1 || float(bar_sz) < rng);
     assert(color != 2 || float(bar_sz) < 2 * rng);
     assert(color != 3 || float(bar_sz) < 3 * rng);
-    assert(color == 4 || float(bar_sz) < 4 * rng);
+    assert(color != 4 || float(bar_sz) < 4 * rng);
 
     // a separate color range
     const auto cur_color_rng = bar_sz - rng * static_cast<int>(bar_sz / rng);
