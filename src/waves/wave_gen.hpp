@@ -86,18 +86,20 @@ class SineWave: public Generator<double>
     const Generator<std::chrono::steady_clock::time_point>& m_time_gen;
     mutable double m_curr_freq;
     mutable double m_curr_phase;
+    /// @todo May be it's a good idea to add start() method to an interface
+    std::chrono::steady_clock::time_point m_start_time {m_time_gen.get()};
 
 public:
     SineWave() = default;
     SineWave(const WaveArgs& args, const Generator<std::chrono::steady_clock::time_point>& gen)
         noexcept
-        : m_args(args), m_time_gen(gen), m_curr_freq(args.frequency())
+        : m_args(args), m_time_gen(gen), m_curr_freq(args.frequency()), m_curr_phase(args.phase())
     {
     }
 
     double get() const override
     {
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(m_time_gen.get().time_since_epoch()).count();
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(m_time_gen.get() - m_start_time).count();
         double rad = (ms / 1000. * m_curr_freq) * 2 * std::numbers::pi_v<double>;
         double res = std::sin(rad + m_curr_phase) * m_args.amp() + m_args.y_offset();
         m_curr_freq = m_args.frequency();
@@ -119,6 +121,7 @@ class SawToothWave: public Generator<double>
 {
     WaveArgs m_args;
     const Generator<std::chrono::steady_clock::time_point>& m_time_gen;
+    std::chrono::steady_clock::time_point m_start_time {m_time_gen.get()};
 
 public:
     SawToothWave(const WaveArgs& args, const Generator<std::chrono::steady_clock::time_point>& gen)
@@ -128,8 +131,7 @@ public:
 
     double get() const override
     {
-        auto tp = m_time_gen.get();
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(m_time_gen.get() - m_start_time).count();
         return -2. * m_args.amp() / std::numbers::pi_v<double> * std::atan(
             1. / std::tan(ms / 1000. * m_args.frequency() * std::numbers::pi_v<double> + m_args.phase())
         );
