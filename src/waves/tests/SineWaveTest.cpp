@@ -34,6 +34,7 @@ TEST_F(SineWaveTest, SimpleWaveTest)
 {
     std::vector tps = {
         std::chrono::steady_clock::time_point {std::chrono::milliseconds {0}}
+      , std::chrono::steady_clock::time_point {std::chrono::milliseconds {0}}
       , std::chrono::steady_clock::time_point {std::chrono::milliseconds {125}}
       , std::chrono::steady_clock::time_point {std::chrono::milliseconds {250}}
       , std::chrono::steady_clock::time_point {std::chrono::milliseconds {375}}
