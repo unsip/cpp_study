@@ -27,7 +27,7 @@ public:
     constexpr std::size_t idx_by_lvl(float lvl) const
     {
         assert(lvl >= min());
-        assert(lvl < max());
+        assert(lvl <= max());
         return std::min<std::size_t>(lvl / delta(), size() - 1);
     }
 

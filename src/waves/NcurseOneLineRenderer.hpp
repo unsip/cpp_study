@@ -2,6 +2,7 @@
 
 #include "Renderer.hpp"
 #include <chrono>
+#include <optional>
 #include <memory>
 
 class NcurseOneLineRenderer : public Renderer
@@ -14,6 +15,10 @@ class NcurseOneLineRenderer : public Renderer
     double m_min_level;
     double m_max_level;
     std::chrono::steady_clock::time_point m_prev_tp;
+    std::optional<double> m_prev_lvl;
+
+    /// signal level in terms of graph bar size
+    float level_to_bar(float lvl) const;
 
 public:
     NcurseOneLineRenderer(double min_level, double max_level);

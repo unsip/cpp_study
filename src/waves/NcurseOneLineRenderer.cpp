@@ -32,6 +32,16 @@ auto create_screen()
     };
 }
 
+constexpr auto MAX_GAUGE = 5;
+
+int gauge_by_bar(float bar_sz)
+{
+    assert(bar_sz >= 0);
+    const auto gauge = std::min<decltype(MAX_GAUGE)>(MAX_GAUGE, bar_sz);
+    assert(gauge >= 0);
+    return gauge;
+}
+
 /// @todo External parameter to change buffer size depending on a sampler rate
 constexpr int BUFFER_MULT = 2;
 
@@ -45,9 +55,10 @@ struct NcurseOneLineRenderer::Impl
     int m_width{COLS};
     int m_height{LINES};
     // ncurses pads to implement double bufferring
-    decltype(create_pad(0, 0)) m_prev = create_pad(m_height, m_width * BUFFER_MULT);
-    decltype(m_prev) m_cur = create_pad(m_height, m_width * BUFFER_MULT);
-    int m_cur_pos = m_width * (BUFFER_MULT - 1);
+    decltype(create_pad(0, 0)) m_prev_pad = create_pad(m_height, m_width * BUFFER_MULT);
+    decltype(m_prev_pad) m_cur_pad = create_pad(m_height, m_width * BUFFER_MULT);
+    int m_cur_x_pos = m_width * (BUFFER_MULT - 1);
+
 };
 
 NcurseOneLineRenderer::NcurseOneLineRenderer(double min_level, double max_level)
@@ -74,6 +85,21 @@ NcurseOneLineRenderer::NcurseOneLineRenderer(double min_level, double max_level)
 
 NcurseOneLineRenderer::~NcurseOneLineRenderer() = default;
 
+float NcurseOneLineRenderer::level_to_bar(float lvl) const
+{
+    float bar_sz = lvl < m_min_level
+        ? 0
+        : m_max_level < lvl
+            ? m_impl->m_height
+            : std::abs((lvl - m_min_level) / m_sample_rate);
+
+    // invert graph if ratio is negative
+    if (bar_sz < 0)
+        bar_sz = m_impl->m_height + bar_sz;
+
+    return bar_sz;
+}
+
 void NcurseOneLineRenderer::render(double lvl)
 {
     constexpr auto COLORS = 4;
@@ -81,47 +107,87 @@ void NcurseOneLineRenderer::render(double lvl)
     constexpr auto SHADES_NUM = COLORS * ATTRS;
 
     assert(m_impl->m_height >= 0);
-    Zones zones{static_cast<std::size_t>(m_impl->m_height), SHADES_NUM};
+    Zones zones {static_cast<std::size_t>(m_impl->m_height), SHADES_NUM};
 
-    // signal lvl in terms of graph bar size
-    float bar_sz = lvl < m_min_level
-        ? zones.min()
-        : m_max_level < lvl
-            ? zones.max()
-            : std::abs((lvl - m_min_level) / m_sample_rate);
-
-    // invert graph if ratio is negative
-    if (bar_sz < 0)
-        bar_sz = m_impl->m_height + bar_sz; 
+    auto bar_sz = level_to_bar(lvl);
 
     assert(bar_sz >= zones.min());
     assert(bar_sz <= zones.max());
 
+    /// @todo bar may be equal to zones.max() and leads to assert
     // graph line color depends on signal level
-    const int color = zones.idx_by_lvl(bar_sz) / ATTRS + 1;
-    // color depth attribute
-    const int attr = zones.idx_by_lvl(bar_sz) % ATTRS;
+    const auto color_by_bar = [&zones] (float bar) { /// @todo bar_lvl
+        return COLOR_PAIR(zones.idx_by_lvl(bar) / ATTRS + 1);
+    };
 
-    // graph bar's top Y coordinate
-    const auto pos = m_impl->m_height - bar_sz;
-    wmove(*m_impl->m_cur, pos, m_impl->m_cur_pos);
-    wattrset(*m_impl->m_cur, COLOR_PAIR(color) | [attr] {
-        switch (attr) {
+    // color depth attribute
+    const auto attr_by_bar = [&zones] (float bar) {
+        switch (zones.idx_by_lvl(bar) % ATTRS)
+        {
           default:
             assert(false);
           case 1: return 0u;
           case 0: return A_DIM;
           case 2: return A_BOLD;
         }
-    }());
+    };
 
-    // graph line size
-    constexpr auto MAX_GAUGE = 5;
-    const auto gauge = std::min<decltype(MAX_GAUGE)>(MAX_GAUGE, bar_sz);
-    assert(gauge >= 0);
-    assert(pos + gauge <= m_impl->m_height);
+    // note for bar=0 result is out of end coordinate
+    const auto bar_to_y = [this](int bar) {
+        assert(bar >= 0);
+        assert(bar <= m_impl->m_height);
+        return m_impl->m_height - bar;
+    };
 
-    wvline_set(*m_impl->m_cur, WACS_BLOCK, gauge);
+    const auto y_to_bar = [this](int y) {
+        assert(y >= 0);
+        assert(y < m_impl->m_height);
+        return m_impl->m_height - y;
+    };
+
+    auto draw_segment = [this, color_by_bar, attr_by_bar, y_to_bar](auto y, auto symbol) {
+        wmove(*m_impl->m_cur_pad, y, m_impl->m_cur_x_pos);
+        wattrset(*m_impl->m_cur_pad, color_by_bar(y_to_bar(y)) | attr_by_bar(y_to_bar(y)));
+        const auto gauge = gauge_by_bar(y_to_bar(y));
+        assert(y + gauge <= m_impl->m_height);
+        wvline_set(*m_impl->m_cur_pad, symbol, gauge);
+        return y + gauge;
+    };
+
+    // graph bar's top Y coordinate
+    // if falling too fast
+    auto cur_y = bar_to_y(bar_sz);
+    if (m_prev_lvl)
+        if (
+            auto prev_bar = level_to_bar(*m_prev_lvl)
+          ; static_cast<std::size_t>(prev_bar) > static_cast<std::size_t>(bar_sz + MAX_GAUGE)
+        )
+        {
+            for (
+                auto y = bar_to_y(prev_bar) + gauge_by_bar(prev_bar)
+              ; y < cur_y
+              ; y = draw_segment(y, WACS_DARROW)
+            ) ;
+        }
+
+    if (cur_y < m_impl->m_height)
+        cur_y = draw_segment(cur_y, WACS_BLOCK);
+
+    // if raising too fast
+    if (m_prev_lvl)
+        if (
+            auto prev_bar = level_to_bar(*m_prev_lvl)
+            /// @todo It's necessry to distinguish bar_lvl (float) and bar (int)
+          ; static_cast<std::size_t>(bar_sz - gauge_by_bar(bar_sz)) > static_cast<std::size_t>(prev_bar)
+        )
+        {
+            assert(cur_y < m_impl->m_height);
+            for (
+                auto y = cur_y
+              ; y < bar_to_y(prev_bar)
+              ; y = draw_segment(y, WACS_UARROW)
+            ) ;
+        }
 
     using namespace std::chrono;
     auto now = steady_clock::now();
@@ -131,9 +197,9 @@ void NcurseOneLineRenderer::render(double lvl)
     if (now >= m_prev_tp + 1000ms / FRAME_RATE)
     {
         prefresh(
-            *m_impl->m_cur                                  // pad
+            *m_impl->m_cur_pad                              // pad
           , 0                                               // pminrow
-          , m_impl->m_cur_pos                               // pmincol
+          , m_impl->m_cur_x_pos                             // pmincol
           , 0                                               // sminrow
           , 0                                               // smincol
           , m_impl->m_height - 1                            // smaxrow
@@ -143,16 +209,16 @@ void NcurseOneLineRenderer::render(double lvl)
     }
 
     // copy visible history data and swap pads
-    if (0 == m_impl->m_cur_pos--)
+    if (0 == m_impl->m_cur_x_pos--)
     {
-        m_impl->m_cur_pos = m_impl->m_width * (BUFFER_MULT - 1);
-        std::swap(m_impl->m_prev, m_impl->m_cur);
-        wclear(*m_impl->m_cur);
-        auto dmincol = m_impl->m_cur_pos  + 1;
+        m_impl->m_cur_x_pos = m_impl->m_width * (BUFFER_MULT - 1);
+        std::swap(m_impl->m_prev_pad, m_impl->m_cur_pad);
+        wclear(*m_impl->m_cur_pad);
+        auto dmincol = m_impl->m_cur_x_pos  + 1;
         auto dmaxcol = m_impl->m_width * BUFFER_MULT - 1;
         copywin(
-            *m_impl->m_prev                                 // src
-          , *m_impl->m_cur                                  // dst
+            *m_impl->m_prev_pad                             // src
+          , *m_impl->m_cur_pad                              // dst
           , 0                                               // sminrow, y
           , 0                                               // smincol, x
           , 0                                               // dminrow, y
@@ -164,4 +230,6 @@ void NcurseOneLineRenderer::render(double lvl)
         assert(dmincol < dmaxcol);
         assert(m_impl->m_width - 2 == dmaxcol - dmincol);
     }
+
+    m_prev_lvl = lvl;
 }
