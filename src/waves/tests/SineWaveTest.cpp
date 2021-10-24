@@ -34,6 +34,7 @@ TEST_F(SineWaveTest, SimpleWaveTest)
 {
     std::vector tps = {
         std::chrono::steady_clock::time_point {std::chrono::milliseconds {0}}
+      , std::chrono::steady_clock::time_point {std::chrono::milliseconds {0}}
       , std::chrono::steady_clock::time_point {std::chrono::milliseconds {125}}
       , std::chrono::steady_clock::time_point {std::chrono::milliseconds {250}}
       , std::chrono::steady_clock::time_point {std::chrono::milliseconds {375}}
@@ -45,13 +46,14 @@ TEST_F(SineWaveTest, SimpleWaveTest)
     SineWave wave_gen {WaveArgs::Builder{}, gen};
 
 
-    // @todo: Correct tests
-    EXPECT_NEAR(0.000, wave_gen.get(), 0.01);
-    EXPECT_NEAR(0.707, wave_gen.get(), 0.01);
-    EXPECT_NEAR(1., wave_gen.get(), 0.01);
-    EXPECT_NEAR(0.5, wave_gen.get(), 0.01);
-    EXPECT_NEAR(0., wave_gen.get(), 0.01);
-    EXPECT_NEAR(-1., wave_gen.get(), 0.01);
-    EXPECT_NEAR(0., wave_gen.get(), 0.01);
+    /// @todo an accuracy isn't enough
+    constexpr auto DELTA = .001;
+    EXPECT_NEAR(0.000, wave_gen.get(), DELTA);
+    EXPECT_NEAR(0.707, wave_gen.get(), DELTA);
+    EXPECT_NEAR(1., wave_gen.get(), DELTA);
+    EXPECT_NEAR(0.707, wave_gen.get(), DELTA);
+    EXPECT_NEAR(0., wave_gen.get(), DELTA);
+    EXPECT_NEAR(-1., wave_gen.get(), DELTA);
+    EXPECT_NEAR(0., wave_gen.get(), DELTA);
 }
 
