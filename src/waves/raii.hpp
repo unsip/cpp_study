@@ -23,20 +23,20 @@ public:
       : m_uninit(std::forward<UF>(uninit))
       , m_resource{std::invoke(std::forward<IF>(init))}
     {}
-  
+
     Resource& operator*() { return *m_resource; }
     const Resource& operator*() const { return *m_resource; }
-  
+
     raii(const raii&) = delete;
     raii& operator=(const raii&) = delete;
-  
+
     raii(raii&& rhv)
       : m_uninit(std::move(rhv.m_uninit))
       , m_resource(std::move(rhv.m_resource))
     {
         rhv.m_resource.reset();
     }
-  
+
     raii& operator=(raii&& rhv)
     {
         m_uninit = std::move(rhv.m_uninit);
@@ -44,9 +44,9 @@ public:
         rhv.m_resource.reset();
         return *this;
     }
-  
+
     ~raii() { if (m_resource) m_uninit(*m_resource); }
-  
+
 private:
     UninitF m_uninit;
     std::optional<Resource> m_resource;
@@ -66,25 +66,25 @@ public:
           , std::forward<UF>(uninit)
         )}
     {}
-  
+
     raii(const raii&) = delete;
     raii& operator=(const raii&) = delete;
-  
+
     raii(raii&& rhv)
       : m_uninit(std::move(rhv.m_uninit))
     {
         rhv.m_uninit.reset();
     }
-  
+
     raii& operator=(raii&& rhv)
     {
         m_uninit = std::move(rhv.m_uninit);
         rhv.m_uninit.reset();
         return *this;
     }
-  
+
     ~raii() { if (m_uninit) std::invoke(*m_uninit); }
-  
+
 private:
     std::optional<UninitF> m_uninit;
 };

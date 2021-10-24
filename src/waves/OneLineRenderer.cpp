@@ -21,7 +21,6 @@ void OneLineRenderer::render(double point)
     else if (m_min_level < point)
     {
         int pos = (point - m_min_level) / m_sample_rate;
-        //std::cout << "Point: " << point << " Pos: " << pos << std::endl;
         if (pos > 0)
             line = std::string (pos, BLOCK);
         else
