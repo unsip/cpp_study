@@ -3,7 +3,8 @@ add_executable(
     HeapSortTests.cpp
     MergeSortTests.cpp
     QuickSortTests.cpp
-)
+  )
+
 target_link_libraries(
     AlgorithmsTests
     PRIVATE
@@ -11,4 +12,5 @@ target_link_libraries(
         GTest::GTest
         GTest::Main
   )
+
 gtest_discover_tests(AlgorithmsTests)

@@ -3,13 +3,15 @@ add_executable(
     main.cpp
     OneLineRenderer.cpp
     NcurseOneLineRenderer.cpp
-)
+  )
 
 target_link_libraries(
     WavingStuff
     PRIVATE
       ${CURSES_NCURSES_LIBRARY}
       ${CURSES_EXTRA_LIBRARY}
-)
+  )
 
-add_subdirectory(tests)
+if (BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

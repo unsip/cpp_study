@@ -1,7 +1,7 @@
 add_executable(
     BestiaryTest
     BestiaryTest.cpp
-)
+  )
 target_link_libraries(
     BestiaryTest
     PRIVATE

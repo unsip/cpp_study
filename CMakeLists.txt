@@ -18,10 +18,16 @@ add_compile_options(
     -Wpedantic
 )
 
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
 set(CURSES_NEED_WIDE TRUE)
 find_package(Curses REQUIRED)
 find_package(GTest)
 
-enable_testing()
+include(CTest)
+if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
+endif()
 
 add_subdirectory(src)
