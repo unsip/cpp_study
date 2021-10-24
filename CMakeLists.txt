@@ -11,8 +11,15 @@ project(
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+add_compile_options(
+    # TODO Wrap into genex if other than GCC/Clang compilers needed
+    -Wall
+    -Wextra
+    -Wpedantic
+)
 
+set(CURSES_NEED_WIDE TRUE)
+find_package(Curses REQUIRED)
 find_package(GTest)
 
 enable_testing()
