@@ -7,6 +7,7 @@ add_executable(
 add_executable(hello_ptr hello_ptr.cpp)
 add_executable(ones_search ones_search.cpp)
 add_executable(avg_mean avg_mean.cpp)
+add_executable(even_del even_del.cpp)
 
 add_library(sll sll.cpp)
 add_executable(sll_test sll_test.cpp)
