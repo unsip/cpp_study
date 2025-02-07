@@ -80,6 +80,7 @@ public:
     }
 };
 
+
 class SineWave: public Generator<double>
 {
     WaveArgs m_args;

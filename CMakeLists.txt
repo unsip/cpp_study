@@ -25,6 +25,12 @@ set(CURSES_NEED_WIDE TRUE)
 find_package(Curses REQUIRED)
 find_package(GTest)
 
+message(${CURSES_HAVE_NCURSES_CURSES_H})
+message(${CURSES_NCURSES_LIBRARY})
+message(${CURSES_INCLUDE_DIRS})
+message(${CURSES_CFLAGS})
+
+
 include(CTest)
 if(BUILD_TESTING)
     find_package(GTest REQUIRED)

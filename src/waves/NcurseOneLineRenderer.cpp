@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cassert>
-#include <ncurses.h>
+#include <ncursesw/ncurses.h>
 
 namespace {
 
@@ -76,11 +76,12 @@ NcurseOneLineRenderer::NcurseOneLineRenderer(double min_level, double max_level)
 
     noecho();
     refresh();
+    use_default_colors();
     start_color();
-    init_pair(1, COLOR_BLUE, COLOR_BLACK);
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);
-    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(4, COLOR_RED, COLOR_BLACK);
+    init_pair(1, COLOR_BLUE, -1);
+    init_pair(2, COLOR_GREEN, -1);
+    init_pair(3, COLOR_YELLOW, -1);
+    init_pair(4, COLOR_RED, -1);
 }
 
 NcurseOneLineRenderer::~NcurseOneLineRenderer() = default;
@@ -147,7 +148,7 @@ void NcurseOneLineRenderer::render(double lvl)
 
     auto draw_segment = [this, color_by_bar, attr_by_bar, y_to_bar](auto y, auto symbol) {
         wmove(*m_impl->m_cur_pad, y, m_impl->m_cur_x_pos);
-        wattrset(*m_impl->m_cur_pad, color_by_bar(y_to_bar(y)) | attr_by_bar(y_to_bar(y)));
+        wattrset(*m_impl->m_cur_pad, color_by_bar(y_to_bar(y)) /*| attr_by_bar(y_to_bar(y))*/);
         const auto gauge = gauge_by_bar(y_to_bar(y));
         assert(y + gauge <= m_impl->m_height);
         wvline_set(*m_impl->m_cur_pad, symbol, gauge);
@@ -191,7 +192,7 @@ void NcurseOneLineRenderer::render(double lvl)
 
     using namespace std::chrono;
     auto now = steady_clock::now();
-    constexpr auto FRAME_RATE = 7;
+    constexpr auto FRAME_RATE = 400;
     using namespace std::literals::chrono_literals;
     // draw new frame according frame rate setting
     if (now >= m_prev_tp + 1000ms / FRAME_RATE)
